@@ -20,22 +20,20 @@ Platform-agnostic monitoring solution for Plesk, GridPane, and custom Ubuntu ser
                                                     [Dashboards & Alerts]
 ```
 
-## Quick Start
+## Installation
 
-See [QUICKSTART.md](docs/QUICKSTART.md) for a 10-minute setup guide.
-
-**TL;DR:**
 1. Sign up for [Grafana Cloud](https://grafana.com/products/cloud/) (free tier works)
-2. Get API key and Prometheus URL
-3. On your server:
+2. Get your credentials from Stack → Prometheus → Send Metrics
+3. Run on your server:
    ```bash
    export GRAFANA_CLOUD_URL="https://prometheus-xxx.grafana.net/api/prom/push"
-   export GRAFANA_CLOUD_USER="123456"  # Instance ID from Grafana Cloud
-   export GRAFANA_CLOUD_API_KEY="glc_..."  # API Token from Grafana Cloud
+   export GRAFANA_CLOUD_USER="123456"  # Instance ID
+   export GRAFANA_CLOUD_API_KEY="glc_..."  # API Token
    sudo -E bash deployment/install.sh
    ```
-4. Import dashboards from `dashboards/` into Grafana Cloud UI
-5. Done! View metrics in your dashboards
+4. Import dashboards from `dashboards/` into Grafana Cloud
+
+See [INSTALLATION.md](docs/INSTALLATION.md) for detailed instructions.
 
 ## Directory Structure
 
@@ -97,8 +95,7 @@ docs/               - Documentation
 
 ## Documentation
 
-- **[Quick Start](docs/QUICKSTART.md)** - Get running in 10 minutes
-- **[Installation Guide](docs/INSTALLATION.md)** - Detailed setup instructions
+- **[Installation Guide](docs/INSTALLATION.md)** - Complete setup instructions
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Customization and tuning
 - **[Architecture](docs/ARCHITECTURE.md)** - How everything works
 

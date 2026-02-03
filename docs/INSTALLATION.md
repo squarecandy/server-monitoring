@@ -4,82 +4,54 @@
 
 - Root access to your servers
 - Grafana Cloud account (free tier or paid)
-- Supported OS: Ubuntu 20.04+, Debian 10+, RHEL/CentOS 7+
+- Ubuntu 20.04+, Debian 10+, or RHEL/CentOS 7+
 
-## Step 1: Sign Up for Grafana Cloud
+## Step 1: Get Grafana Cloud Credentials
 
-1. Go to [https://grafana.com/products/cloud/](https://grafana.com/products/cloud/)
-2. Sign up for a free account (or use existing account)
-3. Create a new stack or use an existing one
-4. Navigate to **Configuration** → **API Keys**
-5. Note your **Instance ID** (also called Username or User ID)
-6. Create a new API key with **MetricsPublisher** role (this is your API Token)
-7. Note your Prometheus endpoint URL (format: `https://prometheus-xxx.grafana.net/api/prom/push`)
+1. Sign up at [grafana.com/products/cloud](https://grafana.com/products/cloud/) (free tier available)
+2. Go to your stack → **Details** → **Prometheus** → **Send Metrics**
+3. You'll see:
+   - **Remote Write Endpoint** - Copy this entire URL → `GRAFANA_CLOUD_URL`
+   - **Username / Instance ID** - Usually a number like `123456` → `GRAFANA_CLOUD_USER`
+   - **Password / API Key** - Click **Generate now** to create → `GRAFANA_CLOUD_API_KEY`
+     - Starts with `glc_` 
+     - Save immediately (you can't view it again)
 
-**Where to find these in Grafana Cloud:**
-- Go to your stack's **Details** page
-- Under **Prometheus** section, click "Send Metrics"
-- You'll see:
-  - **Remote Write Endpoint** (your GRAFANA_CLOUD_URL)
-  - **Username / Instance ID** (your GRAFANA_CLOUD_USER)  
-  - Click "Generate now" to create an API token (your GRAFANA_CLOUD_API_KEY)
-
-## Step 2: Prepare Your Server
-
-On each server you want to monitor:
+## Step 2: Download on Your Server
 
 ```bash
-# Clone or download this repository
 cd /tmp
 git clone https://github.com/squarecandy/server-monitoring.git
 cd server-monitoring
-
-# Or download and extract
-curl -L https://github.com/squarecandy/server-monitoring/archive/main.tar.gz | tar xz
-cd server-monitoring-main
 ```
 
 ## Step 3: Set Credentials
 
-Set your Grafana Cloud credentials as environment variables:
-
 ```bash
 export GRAFANA_CLOUD_URL="https://prometheus-xxx.grafana.net/api/prom/push"
-export GRAFANA_CLOUD_USER="123456"  # Your instance ID from Grafana Cloud
-export GRAFANA_CLOUD_API_KEY="glc_...your-api-token-here"
+export GRAFANA_CLOUD_USER="123456"
+export GRAFANA_CLOUD_API_KEY="glc_..."
 ```
 
-**Security Note**: These credentials will be stored in `/etc/grafana-agent.yaml`. Make sure to restrict file permissions (done automatically by the installer).
-
-**Verify credentials work** (optional but recommended):
+Verify (optional):
 ```bash
-curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_CLOUD_API_KEY}" \
-  -X POST "${GRAFANA_CLOUD_URL}" \
-  -H "Content-Type: application/x-protobuf" \
-  --data-binary @/dev/null
-# Expected: "404 page not found" = credentials work!
-# If you get "401 Unauthorized" = wrong credentials
+curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_CLOUD_API_KEY}" -X POST "${GRAFANA_CLOUD_URL}" \
+  -H "Content-Type: application/x-protobuf" --data-binary @/dev/null
+# "404 page not found" = working, "401 Unauthorized" = wrong credentials
 ```
 
-## Step 4: Run Installation Script
+## Step 4: Install
 
 ```bash
 sudo -E bash deployment/install.sh
 ```
 
-The `-E` flag preserves environment variables when running as sudo.
-
-### What the Installer Does
-
-1. Detects your platform (Plesk, GridPane, or custom Ubuntu)
-2. Installs system dependencies
-3. Creates a monitoring user
-4. Installs Grafana Agent
-5. Installs custom metric exporters
-6. Creates and starts systemd services
-7. Configures metrics collection
-
-Installation typically takes 2-5 minutes.
+The installer will:
+- Detect your platform (Plesk/GridPane/Ubuntu)
+- Install Grafana Agent and dependencies
+- Install custom metric exporters
+- Create and start systemd services
+- Takes 2-5 minutes
 
 ## Step 5: Verify Installation
 
@@ -102,131 +74,70 @@ curl http://localhost:9103/metrics  # Log analyzer
 
 ## Step 6: Import Dashboards
 
-1. Log into your Grafana Cloud instance
-2. Navigate to **Dashboards** → **Import**
-3. Upload each dashboard JSON file from the `dashboards/` directory:
-   - `server-overview.json` - Server-level metrics
-   - `site-comparison.json` - Compare all sites
-   - `site-drilldown.json` - Deep dive into a single site
-
-4. For each dashboard:
-   - Click **Import**
-   - Select your Prometheus data source
-   - Click **Import**
+1. In Grafana Cloud, go to **Dashboards** → **Import**
+2. Upload each JSON file from `dashboards/`:
+   - `server-overview.json`
+   - `site-comparison.json`
+   - `site-drilldown.json`
+3. Select your Prometheus data source and click **Import**
 
 ## Step 7: Configure Alerts
 
-### Option A: Import Alert Rules (Recommended)
-
-1. In Grafana Cloud, go to **Alerting** → **Alert rules**
-2. Click **Import**
-3. Upload `alerts/alert-rules.yaml`
-4. Configure notification channels (email, Slack, etc.)
-
-### Option B: Manual Configuration
-
-Follow the alert configuration guide in [ALERTS.md](ALERTS.md)
+1. In Grafana Cloud, go to **Alerting** → **Alert rules** → **Import**
+2. Upload `alerts/alert-rules.yaml`
+3. Go to **Alerting** → **Contact points** to add email/Slack
 
 ## Step 8: Set Up Notifications
 
-1. In Grafana Cloud, go to **Alerting** → **Contact points**
-2. Add your email address:
-   - Name: `Email Alerts`
-   - Integration: **Email**
-   - Addresses: `your-email@example.com`
+**Alerting** → **Contact points** → **Add contact point**:
+- Email: Add your email address
+- Slack (optional): Add webhook URL
 
-3. Add Slack (optional):
-   - Name: `Slack Alerts`
-   - Integration: **Slack**
-   - Webhook URL: Your Slack webhook URL
+**Alerting** → **Notification policies**: Set default contact point
 
-4. Create notification policies:
-   - Go to **Alerting** → **Notification policies**
-   - Set default contact point to `Email Alerts`
-   - Add specific policies for critical alerts → both Email and Slack
+## Verification
 
-## Verification Checklist
+```bash
+sudo systemctl status grafana-agent sqcdy-*  # All should be active
+curl localhost:9101/metrics  # Should return metrics
+```
 
-- [ ] All 4 services running (`systemctl status`)
-- [ ] Metrics visible locally (`curl localhost:9101/metrics`)
-- [ ] Metrics arriving in Grafana Cloud (check Explore tab)
-- [ ] Dashboards imported and showing data
-- [ ] Alerts configured and test alert sent
-- [ ] Notifications received (email/Slack)
+In Grafana Cloud, check **Explore** tab for incoming metrics.
 
 ## Multi-Server Setup
 
-Repeat Steps 2-5 on each additional server. All servers will report to the same Grafana Cloud instance, and their metrics will be distinguished by the `instance` label (hostname).
+Repeat steps 2-4 on each server. All will report to the same Grafana Cloud instance.
 
 ## Troubleshooting
 
-### No Data Appearing in Grafana Cloud
+**Can't find credentials in Grafana Cloud:**
+- Make sure you've selected a stack (not the org-level view)
+- Free tier includes Prometheus metrics
 
-1. Check Grafana Agent logs:
-   ```bash
-   sudo journalctl -u grafana-agent -n 100
-   ```
+**Lost API token:**
+- Generate a new one: Prometheus → Send Metrics → Generate now
+- Update `/etc/grafana-agent.yaml` with new token
+- Restart: `sudo systemctl restart grafana-agent`
 
-2. Verify credentials are correct in `/etc/grafana-agent.yaml`
-
-3. Test connectivity and authentication:
-   ```bash
-   # Test URL is reachable
-   curl -I https://prometheus-xxx.grafana.net/api/prom/push
-   
-   # Test authentication (should return "404 page not found" if working)
-   curl -u "YOUR_USER:YOUR_TOKEN" -X POST https://prometheus-xxx.grafana.net/api/prom/push \
-     -H "Content-Type: application/x-protobuf" --data-binary @/dev/null
-   ```
-
-### Exporters Not Running
-
-Check individual service logs:
-
+**No data in Grafana Cloud:**
 ```bash
-sudo journalctl -u sqcdy-site-metrics -n 50
-sudo journalctl -u sqcdy-user-metrics -n 50
-sudo journalctl -u sqcdy-log-analyzer -n 50
+sudo journalctl -u grafana-agent -n 100
+# Check credentials in /etc/grafana-agent.yaml
 ```
 
-Common issues:
-- **Permission errors**: Some exporters need root access to read logs
-- **Missing dependencies**: Re-run installer
-- **Port conflicts**: Check if ports 9101-9103 are already in use
+**Service not running:**
+```bash
+sudo journalctl -u sqcdy-site-metrics -n 50
+# Re-run installer if needed
+```
 
-### Platform Not Detected
-
-If platform detection fails:
-
-1. Run detection manually:
-   ```bash
-   sudo /opt/squarecandy-monitoring/exporters/platform-detect.sh
-   ```
-
-2. Check for required files (Plesk: `/usr/local/psa/version`, GridPane: `/usr/local/bin/gp`)
-
-### Site Metrics Not Showing
-
-1. Test site metrics exporter:
-   ```bash
-   sudo python3 /opt/squarecandy-monitoring/exporters/site-metrics.py --test
-   ```
-
-2. Check if sites are detected:
-   ```bash
-   sudo /opt/squarecandy-monitoring/exporters/platform-detect.sh --sites
-   ```
+**No sites detected:**
+```bash
+sudo /opt/squarecandy-monitoring/exporters/platform-detect.sh --sites
+sudo python3 /opt/squarecandy-monitoring/exporters/site-metrics.py --test
+```
 
 ## Next Steps
 
-- [Configuration Guide](CONFIGURATION.md) - Customize metrics and thresholds
-- [Dashboard Guide](DASHBOARDS.md) - Customize dashboards
-- [Alert Tuning](ALERTS.md) - Fine-tune alert thresholds
-- [Maintenance](MAINTENANCE.md) - Updating and maintenance tasks
-
-## Support
-
-For issues or questions:
-1. Check the [Troubleshooting Guide](TROUBLESHOOTING.md)
-2. Review [Common Issues](COMMON-ISSUES.md)
-3. Contact Square Candy support
+- [CONFIGURATION.md](CONFIGURATION.md) - Customize metrics and thresholds
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Understanding the system
