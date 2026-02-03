@@ -26,6 +26,11 @@ export GRAFANA_CLOUD_URL="https://prometheus-xxx.grafana.net/api/prom/push"
 export GRAFANA_CLOUD_USER="123456"  # Your instance ID
 export GRAFANA_CLOUD_API_KEY="glc_..."  # Your API token
 
+# Test credentials (should return "404 page not found")
+curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_CLOUD_API_KEY}" \
+  -X POST "${GRAFANA_CLOUD_URL}" \
+  -H "Content-Type: application/x-protobuf" --data-binary @/dev/null
+
 # Install
 sudo -E bash deployment/install.sh
 ```

@@ -51,6 +51,16 @@ export GRAFANA_CLOUD_API_KEY="glc_...your-api-token-here"
 
 **Security Note**: These credentials will be stored in `/etc/grafana-agent.yaml`. Make sure to restrict file permissions (done automatically by the installer).
 
+**Verify credentials work** (optional but recommended):
+```bash
+curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_CLOUD_API_KEY}" \
+  -X POST "${GRAFANA_CLOUD_URL}" \
+  -H "Content-Type: application/x-protobuf" \
+  --data-binary @/dev/null
+# Expected: "404 page not found" = credentials work!
+# If you get "401 Unauthorized" = wrong credentials
+```
+
 ## Step 4: Run Installation Script
 
 ```bash
@@ -159,9 +169,14 @@ Repeat Steps 2-5 on each additional server. All servers will report to the same 
 
 2. Verify credentials are correct in `/etc/grafana-agent.yaml`
 
-3. Test connectivity:
+3. Test connectivity and authentication:
    ```bash
+   # Test URL is reachable
    curl -I https://prometheus-xxx.grafana.net/api/prom/push
+   
+   # Test authentication (should return "404 page not found" if working)
+   curl -u "YOUR_USER:YOUR_TOKEN" -X POST https://prometheus-xxx.grafana.net/api/prom/push \
+     -H "Content-Type: application/x-protobuf" --data-binary @/dev/null
    ```
 
 ### Exporters Not Running

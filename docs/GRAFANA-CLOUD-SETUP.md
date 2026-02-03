@@ -60,10 +60,15 @@ curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_CLOUD_API_KEY}" \
   -X POST "${GRAFANA_CLOUD_URL}" \
   -H "Content-Type: application/x-protobuf" \
   --data-binary @/dev/null
-
-# Should return: 400 Bad Request (which is OK - means auth worked!)
-# Should NOT return: 401 Unauthorized (would mean wrong credentials)
 ```
+
+**Expected responses:**
+- ✅ `404 page not found` - **AUTH WORKS!** (endpoint exists, auth passed)
+- ✅ `400 Bad Request` - **AUTH WORKS!** (payload invalid but auth passed)
+- ❌ `401 Unauthorized` - Wrong username or API token
+- ❌ `404` with HTML - Wrong URL
+
+If you get `404 page not found` (plain text), your credentials are correct!
 
 ## Common Issues
 
