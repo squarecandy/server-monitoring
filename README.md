@@ -22,13 +22,19 @@ Platform-agnostic monitoring solution for Plesk, GridPane, and custom Ubuntu ser
 
 ## Quick Start
 
-1. Sign up for Grafana Cloud (free tier or paid plan)
-2. Run deployment script on each server:
+See [QUICKSTART.md](docs/QUICKSTART.md) for a 10-minute setup guide.
+
+**TL;DR:**
+1. Sign up for [Grafana Cloud](https://grafana.com/products/cloud/) (free tier works)
+2. Get API key and Prometheus URL
+3. On your server:
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/your-repo/main/deployment/install.sh | sudo bash
+   export GRAFANA_CLOUD_URL="https://prometheus-xxx.grafana.net/api/prom/push"
+   export GRAFANA_CLOUD_API_KEY="your-key"
+   sudo -E bash deployment/install.sh
    ```
-3. Import dashboards from `dashboards/` directory
-4. Configure alerts in `alerts/`
+4. Import dashboards from `dashboards/` into Grafana Cloud UI
+5. Done! View metrics in your dashboards
 
 ## Directory Structure
 
@@ -88,9 +94,45 @@ docs/               - Documentation
 - **Grafana Cloud Free Tier**: Suitable for 1-3 servers
 - **Grafana Cloud Paid**: ~$49-99/month for 180-day retention across multiple servers
 
-## Installation
+## Documentation
 
-See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed setup instructions.
+- **[Quick Start](docs/QUICKSTART.md)** - Get running in 10 minutes
+- **[Installation Guide](docs/INSTALLATION.md)** - Detailed setup instructions
+- **[Configuration Guide](docs/CONFIGURATION.md)** - Customization and tuning
+- **[Architecture](docs/ARCHITECTURE.md)** - How everything works
+
+## What You Get
+
+After installation, you'll have:
+
+- **Centralized Dashboards**: View all servers in one place
+- **Server Metrics**: CPU, memory, disk, load, network, swap
+- **Site Metrics**: Disk usage, traffic, requests, backups per site
+- **User Metrics**: CPU and memory usage per Linux user
+- **Traffic Analysis**: Top IPs, URLs, user agents (15-min windows)
+- **180-Day History**: With paid Grafana Cloud plan (~$50/mo)
+- **Smart Alerts**: Email and Slack notifications for issues
+- **No Performance Impact**: <1% CPU overhead
+
+## Screenshots
+
+*(Import the dashboards to see them in action!)*
+
+**Server Overview Dashboard:**
+- All your servers at a glance
+- CPU, memory, disk, network trends
+- Color-coded health indicators
+
+**Site Comparison Dashboard:**
+- Compare all sites side-by-side
+- Identify resource hogs quickly
+- Overlay charts show patterns
+
+**Site Drilldown Dashboard:**
+- Deep dive into any single site
+- See top IPs hitting your site
+- Track backup status
+- Identify traffic sources
 
 ## License
 
