@@ -12,8 +12,17 @@
 2. Sign up for a free account (or use existing account)
 3. Create a new stack or use an existing one
 4. Navigate to **Configuration** → **API Keys**
-5. Create a new API key with **MetricsPublisher** role
-6. Note your Prometheus endpoint URL (format: `https://prometheus-xxx.grafana.net/api/prom/push`)
+5. Note your **Instance ID** (also called Username or User ID)
+6. Create a new API key with **MetricsPublisher** role (this is your API Token)
+7. Note your Prometheus endpoint URL (format: `https://prometheus-xxx.grafana.net/api/prom/push`)
+
+**Where to find these in Grafana Cloud:**
+- Go to your stack's **Details** page
+- Under **Prometheus** section, click "Send Metrics"
+- You'll see:
+  - **Remote Write Endpoint** (your GRAFANA_CLOUD_URL)
+  - **Username / Instance ID** (your GRAFANA_CLOUD_USER)  
+  - Click "Generate now" to create an API token (your GRAFANA_CLOUD_API_KEY)
 
 ## Step 2: Prepare Your Server
 
@@ -36,7 +45,8 @@ Set your Grafana Cloud credentials as environment variables:
 
 ```bash
 export GRAFANA_CLOUD_URL="https://prometheus-xxx.grafana.net/api/prom/push"
-export GRAFANA_CLOUD_API_KEY="your-api-key-here"
+export GRAFANA_CLOUD_USER="123456"  # Your instance ID from Grafana Cloud
+export GRAFANA_CLOUD_API_KEY="glc_...your-api-token-here"
 ```
 
 **Security Note**: These credentials will be stored in `/etc/grafana-agent.yaml`. Make sure to restrict file permissions (done automatically by the installer).

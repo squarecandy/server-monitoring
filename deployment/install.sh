@@ -25,17 +25,19 @@ fi
 
 # Configuration
 GRAFANA_CLOUD_URL="${GRAFANA_CLOUD_URL:-}"
+GRAFANA_CLOUD_USER="${GRAFANA_CLOUD_USER:-}"
 GRAFANA_CLOUD_API_KEY="${GRAFANA_CLOUD_API_KEY:-}"
 INSTALL_DIR="/opt/squarecandy-monitoring"
 EXPORTER_USER="sqcdy-monitor"
 
 # Check for required environment variables
-if [ -z "$GRAFANA_CLOUD_URL" ] || [ -z "$GRAFANA_CLOUD_API_KEY" ]; then
+if [ -z "$GRAFANA_CLOUD_URL" ] || [ -z "$GRAFANA_CLOUD_USER" ] || [ -z "$GRAFANA_CLOUD_API_KEY" ]; then
     echo -e "${YELLOW}⚠ Grafana Cloud credentials not set${NC}"
     echo ""
     echo "Please set the following environment variables:"
     echo "  export GRAFANA_CLOUD_URL=\"https://prometheus-xxx.grafana.net/api/prom/push\""
-    echo "  export GRAFANA_CLOUD_API_KEY=\"your-api-key\""
+    echo "  export GRAFANA_CLOUD_USER=\"your-instance-id\"  # From Grafana Cloud dashboard"
+    echo "  export GRAFANA_CLOUD_API_KEY=\"your-api-token\"  # From Grafana Cloud dashboard"
     echo ""
     read -p "Continue anyway? (y/N) " -n 1 -r
     echo
@@ -146,6 +148,7 @@ metrics:
     remote_write:
       - url: ${GRAFANA_CLOUD_URL}
         basic_auth:
+          username: ${GRAFANA_CLOUD_USER}
           password: ${GRAFANA_CLOUD_API_KEY}
   
   configs:

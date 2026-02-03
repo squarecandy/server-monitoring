@@ -30,7 +30,8 @@ See [QUICKSTART.md](docs/QUICKSTART.md) for a 10-minute setup guide.
 3. On your server:
    ```bash
    export GRAFANA_CLOUD_URL="https://prometheus-xxx.grafana.net/api/prom/push"
-   export GRAFANA_CLOUD_API_KEY="your-key"
+   export GRAFANA_CLOUD_USER="123456"  # Instance ID from Grafana Cloud
+   export GRAFANA_CLOUD_API_KEY="glc_..."  # API Token from Grafana Cloud
    sudo -E bash deployment/install.sh
    ```
 4. Import dashboards from `dashboards/` into Grafana Cloud UI

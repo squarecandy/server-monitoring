@@ -5,10 +5,11 @@ Get Square Candy monitoring running in under 10 minutes!
 ## 1. Get Grafana Cloud Credentials (2 min)
 
 1. Sign up at [grafana.com/products/cloud](https://grafana.com/products/cloud/) (free tier is fine)
-2. Click **Configuration** → **API Keys** → **Create API Key**
-   - Name: `square-candy-monitoring`
-   - Role: **MetricsPublisher**
-3. Copy the API key and Prometheus URL
+2. Go to your stack → **Details** → **Prometheus** → **Send Metrics**
+3. Note these three values:
+   - **Remote Write Endpoint** (URL)
+   - **Username / Instance ID** (usually a number like 123456)
+   - **Generate now** to create API Token (starts with `glc_`)
 
 ## 2. Install on Your Server (5 min)
 
@@ -20,9 +21,10 @@ cd /tmp
 curl -L https://github.com/squarecandy/server-monitoring/archive/main.tar.gz | tar xz
 cd server-monitoring-main
 
-# Set credentials
+# Set credentials (from Grafana Cloud dashboard)
 export GRAFANA_CLOUD_URL="https://prometheus-xxx.grafana.net/api/prom/push"
-export GRAFANA_CLOUD_API_KEY="your-api-key-here"
+export GRAFANA_CLOUD_USER="123456"  # Your instance ID
+export GRAFANA_CLOUD_API_KEY="glc_..."  # Your API token
 
 # Install
 sudo -E bash deployment/install.sh

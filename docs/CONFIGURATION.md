@@ -201,11 +201,12 @@ sudo iptables -A INPUT -p tcp --dport 9101:9103 -j DROP
 
 To rotate Grafana Cloud API keys:
 
-1. Create new key in Grafana Cloud
+1. Create new token in Grafana Cloud (Stack → Prometheus → Generate token)
 2. Update `/etc/grafana-agent.yaml`:
    ```yaml
    basic_auth:
-     password: NEW_API_KEY_HERE
+     username: YOUR_INSTANCE_ID
+     password: NEW_API_TOKEN_HERE
    ```
 3. Restart agent:
    ```bash
