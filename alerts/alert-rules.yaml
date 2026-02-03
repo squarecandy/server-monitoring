@@ -1,0 +1,205 @@
+# Square Candy Alert Rules Configuration
+# These rules can be imported into Grafana Cloud
+
+groups:
+  - name: squarecandy_server_alerts
+    interval: 1m
+    rules:
+      # Server Health
+      - alert: ServerDown
+        expr: up{job=~"node.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Server {{ $labels.instance }} is down"
+          description: "Server {{ $labels.instance }} has been unreachable for more than 2 minutes."
+      
+      # CPU Alerts
+      - alert: HighCPUUsage
+        expr: (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+      
+      - alert: CriticalCPUUsage
+        expr: (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+      
+      # CPU Steal
+      - alert: HighCPUSteal
+        expr: (avg by (instance) (irate(node_cpu_seconds_total{mode="steal"}[5m])) * 100) > 10
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU steal on {{ $labels.instance }}"
+          description: "CPU steal is {{ $value | humanize }}% on {{ $labels.instance }}. The hypervisor may be overloaded."
+      
+      # Memory Alerts
+      - alert: HighMemoryUsage
+        expr: (100 * (1 - ((node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes))) > 90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+      
+      - alert: CriticalMemoryUsage
+        expr: (100 * (1 - ((node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes))) > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+      
+      # Swap Alerts
+      - alert: SwapUsageHigh
+        expr: ((node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) / node_memory_SwapTotal_bytes * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High swap usage on {{ $labels.instance }}"
+          description: "Swap usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+      
+      - alert: HighSwapActivity
+        expr: rate(node_vmstat_pswpin[5m]) + rate(node_vmstat_pswpout[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High swap activity on {{ $labels.instance }}"
+          description: "Server {{ $labels.instance }} is swapping heavily. Consider adding more RAM."
+      
+      # Disk Alerts
+      - alert: HighDiskUsage
+        expr: (100 - ((node_filesystem_avail_bytes{fstype=~"ext4|xfs",mountpoint="/"} / node_filesystem_size_bytes{fstype=~"ext4|xfs",mountpoint="/"}) * 100)) > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+      
+      - alert: CriticalDiskUsage
+        expr: (100 - ((node_filesystem_avail_bytes{fstype=~"ext4|xfs",mountpoint="/"} / node_filesystem_size_bytes{fstype=~"ext4|xfs",mountpoint="/"}) * 100)) > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanize }}% on {{ $labels.instance }}. Immediate action required!"
+      
+      # Load Average
+      - alert: HighLoadAverage
+        expr: node_load15 / count(node_cpu_seconds_total{mode="idle"}) without (cpu, mode) > 2
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High load average on {{ $labels.instance }}"
+          description: "15-minute load average is {{ $value | humanize }} on {{ $labels.instance }}"
+
+  - name: squarecandy_site_alerts
+    interval: 1m
+    rules:
+      # Site Disk Usage
+      - alert: SiteDiskUsageHigh
+        expr: (sqcdy_site_disk_bytes / 1024 / 1024 / 1024) > 10
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Site {{ $labels.domain }} disk usage high"
+          description: "Site {{ $labels.domain }} is using {{ $value | humanize }}GB of disk space"
+      
+      - alert: SiteDiskUsageCritical
+        expr: (sqcdy_site_disk_bytes / 1024 / 1024 / 1024) > 20
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Site {{ $labels.domain }} disk usage critical"
+          description: "Site {{ $labels.domain }} is using {{ $value | humanize }}GB of disk space. Investigate immediately!"
+      
+      # High Traffic
+      - alert: SiteHighTraffic
+        expr: sqcdy_site_requests_per_minute > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High traffic on {{ $labels.domain }}"
+          description: "Site {{ $labels.domain }} is receiving {{ $value | humanize }} requests/min"
+      
+      - alert: SiteTrafficSpike
+        expr: (sqcdy_site_requests_per_minute / (sqcdy_site_requests_per_minute offset 1h)) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Traffic spike on {{ $labels.domain }}"
+          description: "Traffic on {{ $labels.domain }} is 5x higher than 1 hour ago"
+      
+      # Backup Status
+      - alert: SiteBackupOld
+        expr: (time() - sqcdy_site_backup_timestamp) > 172800
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backup outdated for {{ $labels.domain }}"
+          description: "Last backup for {{ $labels.domain }} was {{ $value | humanizeDuration }} ago"
+      
+      - alert: SiteBackupMissing
+        expr: (time() - sqcdy_site_backup_timestamp) > 604800
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backup missing for {{ $labels.domain }}"
+          description: "No backup found for {{ $labels.domain }} in the past week!"
+      
+      # Error Rate
+      - alert: SiteHighErrorRate
+        expr: (sum by (domain) (sqcdy_site_status_code_total{status=~"5.."}) / sum by (domain) (sqcdy_site_status_code_total)) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on {{ $labels.domain }}"
+          description: "Site {{ $labels.domain }} has {{ $value | humanizePercentage }} 5xx errors"
+
+  - name: squarecandy_user_alerts
+    interval: 1m
+    rules:
+      # High User CPU
+      - alert: UserHighCPU
+        expr: sqcdy_user_cpu_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage by user {{ $labels.user }}"
+          description: "User {{ $labels.user }} is using {{ $value | humanize }}% CPU"
+      
+      # High User Memory
+      - alert: UserHighMemory
+        expr: (sqcdy_user_memory_bytes / 1024 / 1024 / 1024) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage by user {{ $labels.user }}"
+          description: "User {{ $labels.user }} is using {{ $value | humanize }}GB RAM"
