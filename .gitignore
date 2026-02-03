@@ -1,0 +1,45 @@
+# Secrets and credentials
+*.key
+*.pem
+*.env
+.env
+secrets/
+credentials/
+
+# Grafana Cloud API keys
+grafana-*.key
+api-keys.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Local config overrides
+config/local.yaml
+config/*.local.*
