@@ -63,7 +63,7 @@ echo "  ✓ grafana-agent restarted"
 
 echo ""
 echo "Waiting for services to start..."
-sleep 3
+sleep 10
 
 echo ""
 echo "Service Status:"
@@ -86,7 +86,7 @@ echo "============================================"
 check_endpoint() {
     local port=$1
     local name=$2
-    if timeout 2 curl -s http://localhost:$port/metrics > /dev/null 2>&1; then
+    if timeout 5 curl -s http://localhost:$port/metrics | grep -q "^# HELP" 2>/dev/null; then
         echo "  ✓ $name (port $port): responding"
     else
         echo "  ✗ $name (port $port): NOT responding"
