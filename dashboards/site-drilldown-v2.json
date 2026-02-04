@@ -84,14 +84,13 @@
         }
       },
       {
-        "title": "Top IPs (Last 15 Minutes)",
+        "title": "Top IPs",
         "type": "table",
         "gridPos": {"h": 10, "w": 8, "x": 0, "y": 16},
         "targets": [
           {
             "expr": "topk(20, sqcdy_site_top_ip_requests{domain=\"$domain\"})",
             "format": "table",
-            "instant": true,
             "refId": "A"
           }
         ],
@@ -109,14 +108,13 @@
         ]
       },
       {
-        "title": "Top User Agents (Last 15 Minutes)",
+        "title": "Top User Agents",
         "type": "table",
         "gridPos": {"h": 10, "w": 8, "x": 8, "y": 16},
         "targets": [
           {
             "expr": "topk(20, sqcdy_site_top_user_agent_requests{domain=\"$domain\"})",
             "format": "table",
-            "instant": true,
             "refId": "A"
           }
         ],
@@ -134,14 +132,13 @@
         ]
       },
       {
-        "title": "Top URLs (Last 15 Minutes)",
+        "title": "Top URLs",
         "type": "table",
         "gridPos": {"h": 10, "w": 8, "x": 16, "y": 16},
         "targets": [
           {
             "expr": "topk(20, sqcdy_site_top_url_requests{domain=\"$domain\"})",
             "format": "table",
-            "instant": true,
             "refId": "A"
           }
         ],
