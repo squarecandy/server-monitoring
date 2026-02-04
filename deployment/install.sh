@@ -61,8 +61,8 @@ else
     exit 1
 fi
 
-bash "$PLATFORM_DETECT"
-eval "$(bash "$PLATFORM_DETECT" --env)"
+bash "$PLATFORM_DETECT" 2>&1
+eval "$(bash "$PLATFORM_DETECT" --env 2>/dev/null)"
 
 echo ""
 
