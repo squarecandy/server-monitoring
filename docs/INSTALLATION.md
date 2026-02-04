@@ -37,8 +37,12 @@ Verify (optional):
 ```bash
 curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_CLOUD_API_KEY}" -X POST "${GRAFANA_CLOUD_URL}" \
   -H "Content-Type: application/x-protobuf" --data-binary @/dev/null
-# "404 page not found" = working, "401 Unauthorized" = wrong credentials
 ```
+
+**Expected responses (all mean auth is working):**
+- ✅ `404 page not found`
+- ✅ `snappy: corrupt input` or `getting snappy decoded length`
+- ❌ `401 Unauthorized` = wrong credentials
 
 ## Step 4: Install
 
