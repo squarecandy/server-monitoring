@@ -16,6 +16,11 @@ from typing import Dict, List, Optional
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import argparse
 
+# Cache for site list (refresh every 5 minutes)
+SITE_CACHE = None
+SITE_CACHE_TIME = 0
+SITE_CACHE_TTL = 300  # 5 minutes
+
 # Prometheus exposition format
 class PrometheusMetrics:
     def __init__(self):
@@ -63,6 +68,13 @@ class PleskAdapter(PlatformAdapter):
     """Plesk platform adapter"""
     
     def get_sites(self) -> List[Dict[str, str]]:
+        global SITE_CACHE, SITE_CACHE_TIME
+        
+        # Return cached sites if still valid
+        current_time = time.time()
+        if SITE_CACHE is not None and (current_time - SITE_CACHE_TIME) < SITE_CACHE_TTL:
+            return SITE_CACHE
+        
         sites = []
         try:
             # Get list of domains from Plesk CLI
@@ -80,31 +92,16 @@ class PleskAdapter(PlatformAdapter):
                     sites.append({
                         'domain': domain,
                         'path': f"/var/www/vhosts/{domain}",
-                        'user': self._get_site_user(domain)
+                        'user': 'plesk-user'  # Simplified - user lookup is expensive
                     })
         except Exception as e:
             print(f"Error getting Plesk sites: {e}", file=sys.stderr)
         
+        # Update cache
+        SITE_CACHE = sites
+        SITE_CACHE_TIME = current_time
+        
         return sites
-    
-    def _get_site_user(self, domain: str) -> str:
-        """Get the system user for a Plesk site"""
-        try:
-            result = subprocess.run(
-                ['plesk', 'bin', 'subscription', '--info', domain],
-                stdout=PIPE,
-                stderr=PIPE,
-                text=True,
-                timeout=10
-            )
-            for line in result.stdout.split('\n'):
-                if 'Login' in line or 'Owner' in line:
-                    parts = line.split(':')
-                    if len(parts) > 1:
-                        return parts[1].strip()
-        except:
-            pass
-        return "unknown"
     
     def get_site_disk_usage(self, site: Dict) -> float:
         """Get disk usage using du command"""
