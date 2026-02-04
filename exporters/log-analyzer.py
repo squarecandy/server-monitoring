@@ -45,17 +45,27 @@ class LogAnalyzer:
         
         if self.platform == 'plesk':
             # Plesk: /var/www/vhosts/DOMAIN/logs/access_ssl_log (current logs)
+            # Also: /var/www/vhosts/DOMAIN/logs/SUBDOMAIN/access_ssl_log (subdomain logs)
             vhosts_path = Path('/var/www/vhosts')
             if vhosts_path.exists():
                 for domain_dir in vhosts_path.iterdir():
                     if domain_dir.is_dir() and not domain_dir.name.startswith('.') and domain_dir.name != 'system':
                         logs_dir = domain_dir / 'logs'
                         if logs_dir.exists():
-                            # Only read current (non-rotated) log files
+                            # Main domain logs
                             for log_name in ['access_ssl_log', 'proxy_access_ssl_log', 'access_log', 'proxy_access_log']:
                                 log_file = logs_dir / log_name
                                 if log_file.exists() and log_file.stat().st_size > 0:
                                     log_files[domain_dir.name].append(str(log_file))
+                            
+                            # Subdomain logs (subdirectories within logs/)
+                            for subdomain_dir in logs_dir.iterdir():
+                                if subdomain_dir.is_dir():
+                                    subdomain_name = subdomain_dir.name
+                                    for log_name in ['access_ssl_log', 'proxy_access_ssl_log', 'access_log', 'proxy_access_log']:
+                                        log_file = subdomain_dir / log_name
+                                        if log_file.exists() and log_file.stat().st_size > 0:
+                                            log_files[subdomain_name].append(str(log_file))
         
         elif self.platform == 'gridpane':
             # GridPane: /var/log/nginx/DOMAIN-access.log
