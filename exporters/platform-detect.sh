@@ -19,7 +19,7 @@ SITE_PATH=""
 USER_PATTERN=""
 
 detect_platform() {
-    echo "Detecting server platform..."
+    [ "$QUIET" != "true" ] && echo "Detecting server platform..."
     
     # Check for Plesk
     if [ -f /usr/local/psa/version ] || command -v plesk &> /dev/null; then
@@ -30,7 +30,7 @@ detect_platform() {
         SITE_PATH="/var/www/vhosts"
         LOG_PATH="/var/www/vhosts/system"
         USER_PATTERN="psacln"
-        echo -e "${GREEN}✓ Detected: Plesk${NC}"
+        [ "$QUIET" != "true" ] && echo -e "${GREEN}✓ Detected: Plesk${NC}"
         return 0
     fi
     
@@ -40,7 +40,7 @@ detect_platform() {
         SITE_PATH="/var/www"
         LOG_PATH="/var/log/nginx"
         USER_PATTERN="www-data|[a-z0-9]+"
-        echo -e "${GREEN}✓ Detected: GridPane${NC}"
+        [ "$QUIET" != "true" ] && echo -e "${GREEN}✓ Detected: GridPane${NC}"
         return 0
     fi
     
@@ -51,7 +51,7 @@ detect_platform() {
         SITE_PATH="/var/www"
         LOG_PATH="/var/log/nginx"
         USER_PATTERN="www-data"
-        echo -e "${GREEN}✓ Detected: Ubuntu with Nginx${NC}"
+        [ "$QUIET" != "true" ] && echo -e "${GREEN}✓ Detected: Ubuntu with Nginx${NC}"
         return 0
     fi
     
@@ -62,7 +62,7 @@ detect_platform() {
         SITE_PATH="/var/www"
         LOG_PATH="/var/log/apache2"
         USER_PATTERN="www-data"
-        echo -e "${GREEN}✓ Detected: Ubuntu with Apache${NC}"
+        [ "$QUIET" != "true" ] && echo -e "${GREEN}✓ Detected: Ubuntu with Apache${NC}"
         return 0
     fi
     
@@ -73,7 +73,7 @@ detect_platform() {
         SITE_PATH="/var/www"
         LOG_PATH="/var/log"
         USER_PATTERN="www-data|apache|nginx"
-        echo -e "${YELLOW}⚠ Generic Linux detected${NC}"
+        [ "$QUIET" != "true" ] && echo -e "${YELLOW}⚠ Generic Linux detected${NC}"
         return 0
     fi
     
@@ -82,17 +82,17 @@ detect_platform() {
 }
 
 detect_web_server() {
-    echo "Detecting web server..."
+    [ "$QUIET" != "true" ] && echo "Detecting web server..."
     
     if command -v nginx &> /dev/null; then
         WEB_SERVER="nginx"
-        echo -e "${GREEN}✓ Web Server: Nginx${NC}"
+        [ "$QUIET" != "true" ] && echo -e "${GREEN}✓ Web Server: Nginx${NC}"
     elif command -v apache2 &> /dev/null || command -v httpd &> /dev/null; then
         WEB_SERVER="apache"
-        echo -e "${GREEN}✓ Web Server: Apache${NC}"
+        [ "$QUIET" != "true" ] && echo -e "${GREEN}✓ Web Server: Apache${NC}"
     else
         WEB_SERVER="unknown"
-        echo -e "${YELLOW}⚠ Web server not detected${NC}"
+        [ "$QUIET" != "true" ] && echo -e "${YELLOW}⚠ Web server not detected${NC}"
     fi
 }
 
@@ -178,20 +178,24 @@ show_summary() {
 # Main execution
 main() {
     local output_format="summary"
+    QUIET="false"
     
     # Parse arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
             --json)
                 output_format="json"
+                QUIET="true"
                 shift
                 ;;
             --env)
                 output_format="env"
+                QUIET="true"
                 shift
                 ;;
             --sites)
                 output_format="sites"
+                QUIET="true"
                 shift
                 ;;
             --help)
