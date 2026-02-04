@@ -1,9 +1,10 @@
 {
   "title": "Square Candy - Site Drill Down",
+  "uid": "sqcdy-site-drilldown",
   "tags": ["squarecandy", "sites", "drilldown"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 3,
+    "version": 4,
     "refresh": "1m",
     "time": {
       "from": "now-6h",

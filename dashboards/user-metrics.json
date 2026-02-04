@@ -1,9 +1,10 @@
 {
   "title": "Square Candy - User Metrics",
+  "uid": "sqcdy-user-metrics",
   "tags": ["squarecandy", "users", "linux"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 2,
+    "version": 4,
     "refresh": "1m",
     "time": {
       "from": "now-6h",

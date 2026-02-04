@@ -1,9 +1,10 @@
 {
   "title": "Square Candy - Server Overview",
+  "uid": "sqcdy-server-overview",
   "tags": ["squarecandy", "server", "infrastructure"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 3,
+    "version": 4,
     "refresh": "30s",
     "time": {
       "from": "now-6h",
