@@ -1,7 +1,6 @@
 {
-  "dashboard": {
-    "title": "Square Candy - User Metrics",
-    "tags": ["squarecandy", "users", "linux"],
+  "title": "Square Candy - User Metrics",
+  "tags": ["squarecandy", "users", "linux"],
     "timezone": "browser",
     "schemaVersion": 38,
     "version": 1,
@@ -143,5 +142,4 @@
         ]
       }
     ]
-  }
 }

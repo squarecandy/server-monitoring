@@ -1,7 +1,6 @@
 {
-  "dashboard": {
-    "title": "Square Candy - Site Comparison",
-    "tags": ["squarecandy", "sites", "comparison"],
+  "title": "Square Candy - Site Comparison",
+  "tags": ["squarecandy", "sites", "comparison"],
     "timezone": "browser",
     "schemaVersion": 38,
     "version": 2,
@@ -162,5 +161,4 @@
         ]
       }
     ]
-  }
 }

@@ -1,7 +1,6 @@
 {
-  "dashboard": {
-    "title": "Square Candy - Server Overview",
-    "tags": ["squarecandy", "server", "infrastructure"],
+  "title": "Square Candy - Server Overview",
+  "tags": ["squarecandy", "server", "infrastructure"],
     "timezone": "browser",
     "schemaVersion": 38,
     "version": 2,
@@ -228,5 +227,4 @@
         }
       }
     ]
-  }
 }

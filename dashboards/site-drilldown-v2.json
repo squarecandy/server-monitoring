@@ -1,7 +1,6 @@
 {
-  "dashboard": {
-    "title": "Square Candy - Site Drill Down",
-    "tags": ["squarecandy", "sites", "drilldown"],
+  "title": "Square Candy - Site Drill Down",
+  "tags": ["squarecandy", "sites", "drilldown"],
     "timezone": "browser",
     "schemaVersion": 38,
     "version": 2,
@@ -204,5 +203,4 @@
         }
       }
     ]
-  }
 }
