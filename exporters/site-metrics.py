@@ -399,17 +399,6 @@ def collect_metrics(adapter: PlatformAdapter) -> PrometheusMetrics:
             labels={'domain': domain, 'user': user},
             help_text='Site disk usage in bytes'
         )
-        
-        # Backup status
-        backup_time = adapter.get_site_backup_status(site)
-        if backup_time:
-            metrics.add_metric(
-                'sqcdy_site_backup_timestamp',
-                backup_time,
-                labels={'domain': domain},
-                help_text='Timestamp of last successful backup',
-                metric_type='gauge'
-            )
     
     # Add scrape metadata
     metrics.add_metric(

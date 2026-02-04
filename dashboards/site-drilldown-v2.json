@@ -161,7 +161,7 @@
       {
         "title": "HTTP Status Codes",
         "type": "piechart",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 26},
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 26},
         "targets": [
           {
             "expr": "sqcdy_site_status_code_total{domain=\"$domain\"}",
@@ -175,30 +175,6 @@
             "placement": "right",
             "showLegend": true,
             "calcs": ["lastNotNull"]
-          }
-        }
-      },
-      {
-        "title": "Last Backup",
-        "type": "stat",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 26},
-        "targets": [
-          {
-            "expr": "sqcdy_site_backup_timestamp{domain=\"$domain\"}",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "dateTimeFromNow",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "red"},
-                {"value": 86400, "color": "yellow"},
-                {"value": 172800, "color": "green"}
-              ]
-            }
           }
         }
       }
