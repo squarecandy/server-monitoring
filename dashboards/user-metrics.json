@@ -4,7 +4,7 @@
   "tags": ["squarecandy", "users", "linux"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 4,
+    "version": 9,
     "refresh": "1m",
     "time": {
       "from": "now-6h",
@@ -13,26 +13,26 @@
     "templating": {
       "list": [
         {
-          "name": "username",
+          "name": "user",
           "type": "query",
-          "query": "label_values(sqcdy_user_cpu_percent, username)",
+          "query": "label_values(sqcdy_user_cpu_percent{user!~\"root|apache|psaadm|mysql\"}, user)",
           "current": {},
           "refresh": 1,
-          "includeAll": false,
-          "multi": false,
+          "includeAll": true,
+          "multi": true,
           "sort": 1
         }
       ]
     },
     "panels": [
       {
-        "title": "CPU Usage by User",
+        "title": "CPU Usage - All Users",
         "type": "timeseries",
         "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0},
         "targets": [
           {
-            "expr": "sqcdy_user_cpu_percent{username=\"$username\"}",
-            "legendFormat": "{{username}}",
+            "expr": "sqcdy_user_cpu_percent{user=~\"$user\", user!~\"root|apache|psaadm|mysql\"}",
+            "legendFormat": "{{user}}",
             "refId": "A"
           }
         ],
@@ -51,38 +51,38 @@
         }
       },
       {
-        "title": "Memory Usage by User",
+        "title": "Memory Usage (GB) - All Users",
         "type": "timeseries",
         "gridPos": {"h": 10, "w": 24, "x": 0, "y": 10},
         "targets": [
           {
-            "expr": "sqcdy_user_memory_percent{username=\"$username\"}",
-            "legendFormat": "{{username}}",
+            "expr": "(sqcdy_user_memory_bytes{user=~\"$user\"} / 1024 / 1024 / 1024)",
+            "legendFormat": "{{user}}",
             "refId": "A"
           }
         ],
         "fieldConfig": {
           "defaults": {
-            "unit": "percent",
+            "unit": "decgbytes",
             "thresholds": {
               "mode": "absolute",
               "steps": [
                 {"value": 0, "color": "green"},
-                {"value": 50, "color": "yellow"},
-                {"value": 80, "color": "red"}
+                {"value": 1, "color": "yellow"},
+                {"value": 2, "color": "red"}
               ]
             }
           }
         }
       },
       {
-        "title": "Process Count by User",
+        "title": "Process Count - All Users",
         "type": "timeseries",
         "gridPos": {"h": 10, "w": 24, "x": 0, "y": 20},
         "targets": [
           {
-            "expr": "sqcdy_user_processes{username=\"$username\"}",
-            "legendFormat": "{{username}}",
+            "expr": "sqcdy_user_process_count{user=~\"$user\"}",
+            "legendFormat": "{{user}}",
             "refId": "A"
           }
         ],
@@ -93,54 +93,106 @@
         }
       },
       {
-        "title": "Top Users by CPU",
+        "title": "User Resource Summary",
         "type": "table",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 30},
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 30},
         "targets": [
           {
-            "expr": "topk(20, sqcdy_user_cpu_percent)",
+            "expr": "sqcdy_user_cpu_percent{user=~\"$user\", user!~\"root|apache|psaadm|mysql\"}",
             "format": "table",
             "instant": true,
             "refId": "A"
+          },
+          {
+            "expr": "max_over_time(sqcdy_user_cpu_percent{user=~\"$user\", user!~\"root|apache|psaadm|mysql\"}[$__range])",
+            "format": "table",
+            "instant": true,
+            "refId": "B"
+          },
+          {
+            "expr": "sqcdy_user_memory_bytes{user=~\"$user\", user!~\"root|apache|psaadm|mysql\"} / 1024 / 1024 / 1024",
+            "format": "table",
+            "instant": true,
+            "refId": "C"
+          },
+          {
+            "expr": "max_over_time(sqcdy_user_memory_bytes{user=~\"$user\", user!~\"root|apache|psaadm|mysql\"}[$__range]) / 1024 / 1024 / 1024",
+            "format": "table",
+            "instant": true,
+            "refId": "D"
           }
         ],
         "transformations": [
           {
+            "id": "merge"
+          },
+          {
             "id": "organize",
             "options": {
-              "excludeByName": {"Time": true, "instance": true},
+              "excludeByName": {
+                "Time": true,
+                "instance": true,
+                "job": true,
+                "__name__": true
+              },
+              "indexByName": {
+                "user": 0,
+                "Value #A": 1,
+                "Value #B": 2,
+                "Value #C": 3,
+                "Value #D": 4
+              },
               "renameByName": {
-                "username": "User",
-                "Value": "CPU %"
+                "user": "User",
+                "Value #A": "Current CPU %",
+                "Value #B": "Max CPU %",
+                "Value #C": "Current Memory GB",
+                "Value #D": "Max Memory GB"
               }
             }
-          }
-        ]
-      },
-      {
-        "title": "Top Users by Memory",
-        "type": "table",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 30},
-        "targets": [
+          },
           {
-            "expr": "topk(20, sqcdy_user_memory_percent)",
-            "format": "table",
-            "instant": true,
-            "refId": "A"
+            "id": "sortBy",
+            "options": {
+              "fields": {},
+              "sort": [
+                {
+                  "field": "Max CPU %",
+                  "desc": true
+                }
+              ]
+            }
           }
         ],
-        "transformations": [
-          {
-            "id": "organize",
-            "options": {
-              "excludeByName": {"Time": true, "instance": true},
-              "renameByName": {
-                "username": "User",
-                "Value": "Memory %"
-              }
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "displayName": "Max CPU %",
+              "desc": true
             }
-          }
-        ]
+          ]
+        },
+        "fieldConfig": {
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Current CPU %"},
+              "properties": [{"id": "decimals", "value": 2}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Max CPU %"},
+              "properties": [{"id": "decimals", "value": 2}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Current Memory GB"},
+              "properties": [{"id": "decimals", "value": 2}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Max Memory GB"},
+              "properties": [{"id": "decimals", "value": 2}]
+            }
+          ]
+        }
       }
     ]
 }

@@ -22,17 +22,26 @@ get_user_metrics() {
     echo "# TYPE sqcdy_user_process_count gauge"
     
     # Get per-user stats using ps
-    # Format: USER %CPU %MEM RSS COMMAND
-    ps aux --no-headers | awk '{
-        user[$1]["cpu"] += $3
-        user[$1]["mem"] += $4
-        user[$1]["rss"] += $6
+    # Format: USER %CPU %MEM RSS COMMAND (using -eo to get full usernames)
+    ps -eo user:32,%cpu,%mem,rss,comm --no-headers | awk '
+    BEGIN {
+        # System users to exclude
+        split("root apache nginx www-data mysql mariadb postgres chrony dbus polkitd grafana prometheus postfix dovecot named bind psaadm psacln daemon bin sys sync games man lp mail news uucp proxy backup list irc gnats nobody systemd rpc", excluded, " ")
+        for (i in excluded) exclude[excluded[i]] = 1
+    }
+    {
+        user[$1]["cpu"] += $2
+        user[$1]["mem"] += $3
+        user[$1]["rss"] += $4
         user[$1]["count"] += 1
     }
     END {
         for (u in user) {
-            # Skip system users with very low usage unless they match our pattern
-            if (user[u]["cpu"] > 0.1 || user[u]["rss"] > 1000 || u ~ /www-data|psacln|nginx|apache/) {
+            # Skip if user matches excluded list or starts with excluded prefixes
+            if (u in exclude || u ~ /^(plesk-|sw-cp-|systemd-)/) continue
+            
+            # Only show users with meaningful resource usage
+            if (user[u]["cpu"] > 0.01 || user[u]["rss"] > 100) {
                 printf "sqcdy_user_cpu_percent{user=\"%s\"} %.2f\n", u, user[u]["cpu"]
                 printf "sqcdy_user_memory_bytes{user=\"%s\"} %.0f\n", u, user[u]["rss"] * 1024
                 printf "sqcdy_user_process_count{user=\"%s\"} %d\n", u, user[u]["count"]
