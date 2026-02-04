@@ -1,0 +1,5 @@
+# Grafana Cloud Configuration
+# Create an API token in Grafana Cloud: Settings → API Keys → New API Key (Editor role)
+
+GRAFANA_URL=https://YOUR-INSTANCE.grafana.net
+GRAFANA_API_TOKEN=glc_YOUR_API_TOKEN_HERE

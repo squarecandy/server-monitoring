@@ -9,6 +9,7 @@ credentials/
 # Grafana Cloud API keys
 grafana-*.key
 api-keys.txt
+.grafana-config
 
 # Python
 __pycache__/
