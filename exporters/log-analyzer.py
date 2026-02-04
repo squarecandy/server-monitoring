@@ -16,7 +16,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import subprocess
 import json
 import argparse
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import time
 
 # Log parsing regex patterns

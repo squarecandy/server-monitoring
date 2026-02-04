@@ -9,6 +9,7 @@ import os
 import sys
 import json
 import subprocess
+from subprocess import PIPE
 import time
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -67,7 +68,8 @@ class PleskAdapter(PlatformAdapter):
             # Get list of domains from Plesk CLI
             result = subprocess.run(
                 ['plesk', 'bin', 'site', '--list'],
-                capture_output=True,
+                stdout=PIPE,
+                stderr=PIPE,
                 text=True,
                 timeout=30
             )
@@ -90,7 +92,8 @@ class PleskAdapter(PlatformAdapter):
         try:
             result = subprocess.run(
                 ['plesk', 'bin', 'subscription', '--info', domain],
-                capture_output=True,
+                stdout=PIPE,
+                stderr=PIPE,
                 text=True,
                 timeout=10
             )
@@ -112,7 +115,8 @@ class PleskAdapter(PlatformAdapter):
             
             result = subprocess.run(
                 ['du', '-sb', path],
-                capture_output=True,
+                stdout=PIPE,
+                stderr=PIPE,
                 text=True,
                 timeout=60
             )
@@ -178,7 +182,8 @@ class GridPaneAdapter(PlatformAdapter):
             
             result = subprocess.run(
                 ['du', '-sb', path],
-                capture_output=True,
+                stdout=PIPE,
+                stderr=PIPE,
                 text=True,
                 timeout=60
             )
@@ -315,7 +320,8 @@ class UbuntuAdapter(PlatformAdapter):
             
             result = subprocess.run(
                 ['du', '-sb', path],
-                capture_output=True,
+                stdout=PIPE,
+                stderr=PIPE,
                 text=True,
                 timeout=60
             )
@@ -346,7 +352,8 @@ def get_platform_adapter() -> Optional[PlatformAdapter]:
     try:
         result = subprocess.run(
             ['/bin/bash', os.path.join(os.path.dirname(__file__), 'platform-detect.sh'), '--json'],
-            capture_output=True,
+            stdout=PIPE,
+            stderr=PIPE,
             text=True,
             timeout=10
         )
