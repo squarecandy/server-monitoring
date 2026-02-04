@@ -11,6 +11,7 @@ import json
 import subprocess
 from subprocess import PIPE
 import time
+import threading
 from pathlib import Path
 from typing import Dict, List, Optional
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -20,6 +21,10 @@ import argparse
 SITE_CACHE = None
 SITE_CACHE_TIME = 0
 SITE_CACHE_TTL = 300  # 5 minutes
+
+# Cache for metrics (refresh every 2 minutes in background)
+METRICS_CACHE = None
+METRICS_CACHE_LOCK = threading.Lock()
 
 # Prometheus exposition format
 class PrometheusMetrics:
@@ -416,6 +421,26 @@ def collect_metrics(adapter: PlatformAdapter) -> PrometheusMetrics:
     return metrics
 
 
+def background_collector(adapter: PlatformAdapter):
+    """Background thread that collects metrics every 2 minutes"""
+    global METRICS_CACHE
+    
+    while True:
+        try:
+            print("Background collection starting...", file=sys.stderr)
+            metrics = collect_metrics(adapter)
+            
+            with METRICS_CACHE_LOCK:
+                METRICS_CACHE = metrics.render()
+            
+            print("Background collection complete", file=sys.stderr)
+        except Exception as e:
+            print(f"Error in background collection: {e}", file=sys.stderr)
+        
+        # Wait 2 minutes before next collection
+        time.sleep(120)
+
+
 class MetricsHandler(BaseHTTPRequestHandler):
     """HTTP handler for Prometheus metrics endpoint"""
     
@@ -424,8 +449,17 @@ class MetricsHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/metrics':
             try:
-                metrics = collect_metrics(self.adapter)
-                response = metrics.render()
+                global METRICS_CACHE
+                
+                # Return cached metrics if available
+                with METRICS_CACHE_LOCK:
+                    if METRICS_CACHE:
+                        response = METRICS_CACHE
+                    else:
+                        # First request - collect synchronously
+                        metrics = collect_metrics(self.adapter)
+                        response = metrics.render()
+                        METRICS_CACHE = response
                 
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/plain; version=0.0.4')
@@ -460,6 +494,15 @@ def main():
         metrics = collect_metrics(adapter)
         print(metrics.render())
         sys.exit(0)
+    
+    # Start background collection thread
+    collector_thread = threading.Thread(
+        target=background_collector,
+        args=(adapter,),
+        daemon=True
+    )
+    collector_thread.start()
+    print("Started background metrics collector", file=sys.stderr)
     
     # Start HTTP server
     MetricsHandler.adapter = adapter
