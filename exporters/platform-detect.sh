@@ -33,7 +33,7 @@ detect_platform() {
     fi
     
     # Check for GridPane
-    if [ -d /var/www ] && [ -f /usr/local/bin/gp ] || grep -qi "gridpane" /etc/os-release 2>/dev/null; then
+    if [ -d /var/www ] && { [ -f /usr/local/bin/gp ] || grep -qi "gridpane" /etc/os-release 2>/dev/null; }; then
         PLATFORM="gridpane"
         SITE_PATH="/var/www"
         LOG_PATH="/var/log/nginx"
@@ -45,7 +45,7 @@ detect_platform() {
     # Check for custom Ubuntu with nginx
     if [ -f /etc/nginx/nginx.conf ] && [ -f /etc/lsb-release ]; then
         PLATFORM="ubuntu-nginx"
-        PLATFORM_VERSION=$(grep DISTRIB_RELEASE /etc/lsb-release | cut -d= -f2)
+        PLATFORM_VERSION=$(grep DISTRIB_RELEASE /etc/lsb-release 2>/dev/null | cut -d= -f2 || echo "unknown")
         SITE_PATH="/var/www"
         LOG_PATH="/var/log/nginx"
         USER_PATTERN="www-data"
@@ -56,7 +56,7 @@ detect_platform() {
     # Check for custom Ubuntu with apache
     if [ -f /etc/apache2/apache2.conf ] && [ -f /etc/lsb-release ]; then
         PLATFORM="ubuntu-apache"
-        PLATFORM_VERSION=$(grep DISTRIB_RELEASE /etc/lsb-release | cut -d= -f2)
+        PLATFORM_VERSION=$(grep DISTRIB_RELEASE /etc/lsb-release 2>/dev/null | cut -d= -f2 || echo "unknown")
         SITE_PATH="/var/www"
         LOG_PATH="/var/log/apache2"
         USER_PATTERN="www-data"
@@ -67,7 +67,7 @@ detect_platform() {
     # Generic Linux fallback
     if [ -f /etc/os-release ]; then
         PLATFORM="generic-linux"
-        PLATFORM_VERSION=$(grep VERSION_ID /etc/os-release | cut -d= -f2 | tr -d '"')
+        PLATFORM_VERSION=$(grep VERSION_ID /etc/os-release 2>/dev/null | cut -d= -f2 | tr -d '"' || echo "unknown")
         SITE_PATH="/var/www"
         LOG_PATH="/var/log"
         USER_PATTERN="www-data|apache|nginx"
@@ -75,7 +75,13 @@ detect_platform() {
         return 0
     fi
     
-    echo -e "${RED}✗ Unable to detect platform${NC}"
+    # Absolute fallback
+    PLATFORM="unknown"
+    PLATFORM_VERSION="unknown"
+    SITE_PATH="/var/www"
+    LOG_PATH="/var/log"
+    USER_PATTERN="www-data"
+    [ "$QUIET" != "true" ] && echo -e "${RED}✗ Could not detect platform${NC}"
     return 1
 }
 
