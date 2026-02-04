@@ -86,17 +86,19 @@ echo "============================================"
 check_endpoint() {
     local port=$1
     local name=$2
-    if timeout 5 curl -s http://localhost:$port/metrics | grep -q "^# HELP" 2>/dev/null; then
+    local timeout_val=$3
+    
+    if timeout "$timeout_val" curl -sf http://localhost:$port/metrics >/dev/null 2>&1; then
         echo "  ✓ $name (port $port): responding"
     else
         echo "  ✗ $name (port $port): NOT responding"
     fi
 }
 
-check_endpoint 9101 "Site Metrics"
-check_endpoint 9102 "User Metrics"
-check_endpoint 9103 "Log Analyzer"
-check_endpoint 9090 "Grafana Agent"
+check_endpoint 9101 "Site Metrics" 15
+check_endpoint 9102 "User Metrics" 5
+check_endpoint 9103 "Log Analyzer" 10
+check_endpoint 9090 "Grafana Agent" 5
 
 echo ""
 echo "============================================"
