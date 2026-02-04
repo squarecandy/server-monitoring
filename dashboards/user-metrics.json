@@ -1,0 +1,147 @@
+{
+  "dashboard": {
+    "title": "Square Candy - User Metrics",
+    "tags": ["squarecandy", "users", "linux"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "1m",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "username",
+          "type": "query",
+          "query": "label_values(sqcdy_user_cpu_percent, username)",
+          "current": {},
+          "refresh": 1,
+          "includeAll": false,
+          "multi": false,
+          "sort": 1
+        }
+      ]
+    },
+    "panels": [
+      {
+        "title": "CPU Usage by User",
+        "type": "timeseries",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sqcdy_user_cpu_percent{username=\"$username\"}",
+            "legendFormat": "{{username}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 80, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Memory Usage by User",
+        "type": "timeseries",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 10},
+        "targets": [
+          {
+            "expr": "sqcdy_user_memory_percent{username=\"$username\"}",
+            "legendFormat": "{{username}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 80, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Process Count by User",
+        "type": "timeseries",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 20},
+        "targets": [
+          {
+            "expr": "sqcdy_user_processes{username=\"$username\"}",
+            "legendFormat": "{{username}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "title": "Top Users by CPU",
+        "type": "table",
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 30},
+        "targets": [
+          {
+            "expr": "topk(20, sqcdy_user_cpu_percent)",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "instance": true},
+              "renameByName": {
+                "username": "User",
+                "Value": "CPU %"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "title": "Top Users by Memory",
+        "type": "table",
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 30},
+        "targets": [
+          {
+            "expr": "topk(20, sqcdy_user_memory_percent)",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "instance": true},
+              "renameByName": {
+                "username": "User",
+                "Value": "Memory %"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

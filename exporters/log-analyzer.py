@@ -198,6 +198,8 @@ class LogAnalyzer:
         output.append("# TYPE sqcdy_site_bytes_per_minute gauge")
         output.append("# HELP sqcdy_site_top_ip_requests Requests from top IP addresses")
         output.append("# TYPE sqcdy_site_top_ip_requests gauge")
+        output.append("# HELP sqcdy_site_top_user_agent_requests Requests from top user agents")
+        output.append("# TYPE sqcdy_site_top_user_agent_requests gauge")
         output.append("# HELP sqcdy_site_top_url_requests Requests to top URLs")
         output.append("# TYPE sqcdy_site_top_url_requests gauge")
         output.append("# HELP sqcdy_site_status_code_total Requests by status code")
@@ -219,6 +221,11 @@ class LogAnalyzer:
             for ip, count in metrics['top_ips'].most_common(10):
                 safe_ip = ip.replace('"', '\\"')
                 output.append(f'sqcdy_site_top_ip_requests{{domain="{domain}",ip="{safe_ip}"}} {count}')
+            
+            # Top User Agents (top 10)
+            for ua, count in metrics['top_user_agents'].most_common(10):
+                safe_ua = ua.replace('"', '\\"').replace('\\', '\\\\')
+                output.append(f'sqcdy_site_top_user_agent_requests{{domain="{domain}",user_agent="{safe_ua}"}} {count}')
             
             # Top URLs (top 20)
             for url, count in metrics['top_urls'].most_common(20):
