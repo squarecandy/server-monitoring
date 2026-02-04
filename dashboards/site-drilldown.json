@@ -1,88 +1,61 @@
 {
-  "dashboard": {
-    "title": "Square Candy - Site Drilldown",
-    "tags": ["squarecandy", "site", "drilldown"],
+  "title": "Square Candy - Site Drill Down",
+  "tags": ["squarecandy", "sites", "drilldown"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 1,
+    "version": 3,
     "refresh": "1m",
     "time": {
-      "from": "now-1h",
+      "from": "now-6h",
       "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "domain",
+          "type": "query",
+          "query": "label_values(sqcdy_site_disk_bytes, domain)",
+          "current": {},
+          "refresh": 1,
+          "includeAll": false,
+          "multi": false,
+          "sort": 1
+        }
+      ]
     },
     "panels": [
       {
-        "title": "Site Overview",
-        "type": "stat",
-        "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
+        "title": "Disk Utilization (GB)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
         "targets": [
           {
-            "expr": "sqcdy_site_disk_bytes{domain=~\"$site\"} / 1024 / 1024 / 1024",
-            "legendFormat": "Disk Usage (GB)",
+            "expr": "sqcdy_site_disk_bytes{domain=\"$domain\"} / 1024 / 1024 / 1024",
+            "legendFormat": "{{domain}}",
             "refId": "A"
-          },
-          {
-            "expr": "sqcdy_site_requests_per_minute{domain=~\"$site\"}",
-            "legendFormat": "Requests/min",
-            "refId": "B"
-          },
-          {
-            "expr": "sqcdy_site_bytes_per_minute{domain=~\"$site\"} / 1024 / 1024",
-            "legendFormat": "Traffic MB/min",
-            "refId": "C"
-          },
-          {
-            "expr": "time() - sqcdy_site_backup_timestamp{domain=~\"$site\"}",
-            "legendFormat": "Hours Since Backup",
-            "refId": "D"
           }
         ],
         "fieldConfig": {
-          "overrides": [
-            {
-              "matcher": {"id": "byName", "options": "Disk Usage (GB)"},
-              "properties": [{"id": "unit", "value": "decgbytes"}]
-            },
-            {
-              "matcher": {"id": "byName", "options": "Requests/min"},
-              "properties": [{"id": "unit", "value": "reqpm"}]
-            },
-            {
-              "matcher": {"id": "byName", "options": "Traffic MB/min"},
-              "properties": [{"id": "unit", "value": "MBs"}]
-            },
-            {
-              "matcher": {"id": "byName", "options": "Hours Since Backup"},
-              "properties": [
-                {"id": "unit", "value": "s"},
-                {"id": "decimals", "value": 0},
-                {
-                  "id": "thresholds",
-                  "value": {
-                    "mode": "absolute",
-                    "steps": [
-                      {"value": 0, "color": "green"},
-                      {"value": 86400, "color": "yellow"},
-                      {"value": 172800, "color": "red"}
-                    ]
-                  }
-                }
+          "defaults": {
+            "unit": "decgbytes",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 100, "color": "red"}
               ]
             }
-          ]
-        },
-        "options": {
-          "colorMode": "background",
-          "graphMode": "area"
+          }
         }
       },
       {
-        "title": "Request Rate History",
+        "title": "Traffic: Requests per Minute",
         "type": "timeseries",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
         "targets": [
           {
-            "expr": "sqcdy_site_requests_per_minute{domain=~\"$site\"}",
+            "expr": "sqcdy_site_requests_per_minute{domain=\"$domain\"}",
             "legendFormat": "Requests/min",
             "refId": "A"
           }
@@ -94,12 +67,12 @@
         }
       },
       {
-        "title": "Traffic History",
+        "title": "Traffic: MB per Minute",
         "type": "timeseries",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
         "targets": [
           {
-            "expr": "sqcdy_site_bytes_per_minute{domain=~\"$site\"} / 1024 / 1024",
+            "expr": "sqcdy_site_bytes_per_minute{domain=\"$domain\"} / 1024 / 1024",
             "legendFormat": "MB/min",
             "refId": "A"
           }
@@ -111,181 +84,96 @@
         }
       },
       {
-        "title": "Top IPs (Last 15 minutes)",
+        "title": "Top IPs",
         "type": "table",
-        "gridPos": {"h": 10, "w": 8, "x": 0, "y": 14},
+        "gridPos": {"h": 10, "w": 8, "x": 0, "y": 16},
         "targets": [
           {
-            "expr": "topk(20, sqcdy_site_top_ip_requests{domain=~\"$site\"})",
+            "expr": "topk(20, sqcdy_site_top_ip_requests{domain=\"$domain\"})",
             "format": "table",
-            "instant": true,
             "refId": "A"
           }
         ],
-        "fieldConfig": {
-          "overrides": [
-            {
-              "matcher": {"id": "byName", "options": "ip"},
-              "properties": [{"id": "custom.width", "value": 150}]
-            },
-            {
-              "matcher": {"id": "byName", "options": "Value"},
-              "properties": [
-                {"id": "displayName", "value": "Requests"},
-                {"id": "custom.width", "value": 100}
-              ]
-            }
-          ]
-        },
         "transformations": [
           {
             "id": "organize",
             "options": {
-              "excludeByName": {"Time": true, "domain": true, "__name__": true},
-              "indexByName": {"ip": 0, "Value": 1}
+              "excludeByName": {"Time": true, "domain": true},
+              "renameByName": {
+                "ip": "IP Address",
+                "Value": "Requests"
+              }
             }
           }
-        ],
-        "options": {
-          "sortBy": [{"displayName": "Requests", "desc": true}]
-        }
+        ]
       },
       {
-        "title": "Top User Agents (Last 15 minutes)",
+        "title": "Top User Agents",
         "type": "table",
-        "gridPos": {"h": 10, "w": 8, "x": 8, "y": 14},
+        "gridPos": {"h": 10, "w": 8, "x": 8, "y": 16},
         "targets": [
           {
-            "expr": "topk(15, sqcdy_site_top_useragent_requests{domain=~\"$site\"})",
+            "expr": "topk(20, sqcdy_site_top_user_agent_requests{domain=\"$domain\"})",
             "format": "table",
-            "instant": true,
             "refId": "A"
           }
         ],
-        "fieldConfig": {
-          "overrides": [
-            {
-              "matcher": {"id": "byName", "options": "user_agent"},
-              "properties": [{"id": "custom.width", "value": 300}]
-            },
-            {
-              "matcher": {"id": "byName", "options": "Value"},
-              "properties": [
-                {"id": "displayName", "value": "Requests"},
-                {"id": "custom.width", "value": 100}
-              ]
-            }
-          ]
-        },
         "transformations": [
           {
             "id": "organize",
             "options": {
-              "excludeByName": {"Time": true, "domain": true, "__name__": true},
-              "indexByName": {"user_agent": 0, "Value": 1}
+              "excludeByName": {"Time": true, "domain": true},
+              "renameByName": {
+                "user_agent": "User Agent",
+                "Value": "Requests"
+              }
             }
           }
-        ],
-        "options": {
-          "sortBy": [{"displayName": "Requests", "desc": true}]
-        }
+        ]
       },
       {
-        "title": "Top URLs (Last 15 minutes)",
+        "title": "Top URLs",
         "type": "table",
-        "gridPos": {"h": 10, "w": 8, "x": 16, "y": 14},
+        "gridPos": {"h": 10, "w": 8, "x": 16, "y": 16},
         "targets": [
           {
-            "expr": "topk(20, sqcdy_site_top_url_requests{domain=~\"$site\"})",
+            "expr": "topk(20, sqcdy_site_top_url_requests{domain=\"$domain\"})",
             "format": "table",
-            "instant": true,
             "refId": "A"
           }
         ],
-        "fieldConfig": {
-          "overrides": [
-            {
-              "matcher": {"id": "byName", "options": "url"},
-              "properties": [{"id": "custom.width", "value": 400}]
-            },
-            {
-              "matcher": {"id": "byName", "options": "Value"},
-              "properties": [
-                {"id": "displayName", "value": "Requests"},
-                {"id": "custom.width", "value": 100}
-              ]
-            }
-          ]
-        },
         "transformations": [
           {
             "id": "organize",
             "options": {
-              "excludeByName": {"Time": true, "domain": true, "__name__": true},
-              "indexByName": {"url": 0, "Value": 1}
+              "excludeByName": {"Time": true, "domain": true},
+              "renameByName": {
+                "url": "URL",
+                "Value": "Requests"
+              }
             }
           }
-        ],
-        "options": {
-          "sortBy": [{"displayName": "Requests", "desc": true}]
-        }
+        ]
       },
       {
         "title": "HTTP Status Codes",
         "type": "piechart",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 26},
         "targets": [
           {
-            "expr": "sqcdy_site_status_code_total{domain=~\"$site\"}",
+            "expr": "sqcdy_site_status_code_total{domain=\"$domain\"}",
             "legendFormat": "{{status}}",
             "refId": "A"
           }
         ],
         "options": {
-          "legend": {"displayMode": "table", "placement": "right"},
-          "pieType": "donut"
-        }
-      },
-      {
-        "title": "Disk Usage Trend",
-        "type": "timeseries",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
-        "targets": [
-          {
-            "expr": "sqcdy_site_disk_bytes{domain=~\"$site\"} / 1024 / 1024 / 1024",
-            "legendFormat": "Disk Usage (GB)",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "decgbytes",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 5, "color": "yellow"},
-                {"value": 10, "color": "orange"},
-                {"value": 20, "color": "red"}
-              ]
-            }
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true,
+            "calcs": ["lastNotNull"]
           }
         }
       }
-    ],
-    "templating": {
-      "list": [
-        {
-          "name": "site",
-          "type": "query",
-          "query": "label_values(sqcdy_site_disk_bytes, domain)",
-          "label": "Site",
-          "multi": false,
-          "includeAll": false,
-          "current": {},
-          "refresh": 1
-        }
-      ]
-    }
-  }
+    ]
 }

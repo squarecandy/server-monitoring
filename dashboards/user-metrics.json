@@ -3,7 +3,7 @@
   "tags": ["squarecandy", "users", "linux"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 1,
+    "version": 2,
     "refresh": "1m",
     "time": {
       "from": "now-6h",

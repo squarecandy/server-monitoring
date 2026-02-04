@@ -1,168 +1,19 @@
 {
-  "dashboard": {
-    "title": "Square Candy - Site Comparison",
-    "tags": ["squarecandy", "sites", "comparison"],
+  "title": "Square Candy - Site Comparison",
+  "tags": ["squarecandy", "sites", "comparison"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 1,
+    "version": 3,
     "refresh": "1m",
     "time": {
-      "from": "now-3h",
+      "from": "now-6h",
       "to": "now"
     },
     "panels": [
       {
-        "title": "All Sites - Disk Usage (GB)",
+        "title": "Disk Utilization by Site (GB)",
         "type": "timeseries",
         "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0},
-        "targets": [
-          {
-            "expr": "sqcdy_site_disk_bytes / 1024 / 1024 / 1024",
-            "legendFormat": "{{domain}}",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "decgbytes",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 5, "color": "yellow"},
-                {"value": 10, "color": "orange"},
-                {"value": 20, "color": "red"}
-              ]
-            }
-          }
-        },
-        "options": {
-          "tooltip": {"mode": "multi"},
-          "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "sortBy": "Last", "sortDesc": true}
-        }
-      },
-      {
-        "title": "All Sites - Requests per Minute",
-        "type": "timeseries",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 10},
-        "targets": [
-          {
-            "expr": "sqcdy_site_requests_per_minute",
-            "legendFormat": "{{domain}}",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "reqpm",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 100, "color": "yellow"},
-                {"value": 500, "color": "orange"},
-                {"value": 1000, "color": "red"}
-              ]
-            }
-          }
-        },
-        "options": {
-          "tooltip": {"mode": "multi"},
-          "legend": {"displayMode": "table", "placement": "right", "showLegend": true}
-        }
-      },
-      {
-        "title": "All Sites - Traffic MB per Minute",
-        "type": "timeseries",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 20},
-        "targets": [
-          {
-            "expr": "sqcdy_site_bytes_per_minute / 1024 / 1024",
-            "legendFormat": "{{domain}}",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "MBs",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 10, "color": "yellow"},
-                {"value": 50, "color": "orange"},
-                {"value": 100, "color": "red"}
-              ]
-            }
-          }
-        },
-        "options": {
-          "tooltip": {"mode": "multi"},
-          "legend": {"displayMode": "table", "placement": "right", "showLegend": true}
-        }
-      },
-      {
-        "title": "All Users - CPU Usage %",
-        "type": "timeseries",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 30},
-        "targets": [
-          {
-            "expr": "sqcdy_user_cpu_percent",
-            "legendFormat": "{{user}}",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "percent",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 50, "color": "yellow"},
-                {"value": 80, "color": "red"}
-              ]
-            }
-          }
-        },
-        "options": {
-          "tooltip": {"mode": "multi"},
-          "legend": {"displayMode": "table", "placement": "bottom"}
-        }
-      },
-      {
-        "title": "All Users - Memory Usage (GB)",
-        "type": "timeseries",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 30},
-        "targets": [
-          {
-            "expr": "sqcdy_user_memory_bytes / 1024 / 1024 / 1024",
-            "legendFormat": "{{user}}",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "unit": "decgbytes",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 1, "color": "yellow"},
-                {"value": 2, "color": "red"}
-              ]
-            }
-          }
-        },
-        "options": {
-          "tooltip": {"mode": "multi"},
-          "legend": {"displayMode": "table", "placement": "bottom"}
-        }
-      },
-      {
-        "title": "Sites by Disk Usage (Top 20)",
-        "type": "bargauge",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 40},
         "targets": [
           {
             "expr": "topk(20, sqcdy_site_disk_bytes / 1024 / 1024 / 1024)",
@@ -172,26 +23,22 @@
         ],
         "fieldConfig": {
           "defaults": {
-            "unit": "decgbytes",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 5, "color": "yellow"},
-                {"value": 10, "color": "red"}
-              ]
-            }
+            "unit": "decgbytes"
           }
         },
         "options": {
-          "orientation": "horizontal",
-          "displayMode": "gradient"
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true,
+            "calcs": ["lastNotNull", "max"]
+          }
         }
       },
       {
-        "title": "Sites by Request Rate (Top 20)",
-        "type": "bargauge",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 40},
+        "title": "Traffic: Requests per Minute by Site",
+        "type": "timeseries",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 10},
         "targets": [
           {
             "expr": "topk(20, sqcdy_site_requests_per_minute)",
@@ -201,38 +48,114 @@
         ],
         "fieldConfig": {
           "defaults": {
-            "unit": "reqpm",
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 100, "color": "yellow"},
-                {"value": 500, "color": "red"}
-              ]
-            }
+            "unit": "reqpm"
           }
         },
         "options": {
-          "orientation": "horizontal",
-          "displayMode": "gradient"
-        }
-      }
-    ],
-    "templating": {
-      "list": [
-        {
-          "name": "server",
-          "type": "query",
-          "query": "label_values(up, instance)",
-          "label": "Server",
-          "multi": true,
-          "includeAll": true,
-          "current": {
-            "text": "All",
-            "value": "$__all"
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true,
+            "calcs": ["lastNotNull", "max"]
           }
         }
-      ]
-    }
-  }
+      },
+      {
+        "title": "Traffic: MB per Minute by Site",
+        "type": "timeseries",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 20},
+        "targets": [
+          {
+            "expr": "topk(20, sqcdy_site_bytes_per_minute / 1024 / 1024)",
+            "legendFormat": "{{domain}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "MBs"
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true,
+            "calcs": ["lastNotNull", "max"]
+          }
+        }
+      },
+      {
+        "title": "Top IPs",
+        "type": "table",
+        "gridPos": {"h": 10, "w": 8, "x": 0, "y": 30},
+        "targets": [
+          {
+            "expr": "topk(20, sum by (ip) (sqcdy_site_top_ip_requests))",
+            "format": "table",
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "renameByName": {
+                "ip": "IP Address",
+                "Value": "Requests"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "title": "Top User Agents",
+        "type": "table",
+        "gridPos": {"h": 10, "w": 8, "x": 8, "y": 30},
+        "targets": [
+          {
+            "expr": "topk(20, sum by (user_agent) (sqcdy_site_top_user_agent_requests))",
+            "format": "table",
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "renameByName": {
+                "user_agent": "User Agent",
+                "Value": "Requests"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "title": "Top URLs",
+        "type": "table",
+        "gridPos": {"h": 10, "w": 8, "x": 16, "y": 30},
+        "targets": [
+          {
+            "expr": "topk(20, sum by (url) (sqcdy_site_top_url_requests))",
+            "format": "table",
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "renameByName": {
+                "url": "URL",
+                "Value": "Requests"
+              }
+            }
+          }
+        ]
+      }
+    ]
 }

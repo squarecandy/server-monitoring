@@ -1,10 +1,9 @@
 {
-  "dashboard": {
-    "title": "Square Candy - Server Overview",
-    "tags": ["squarecandy", "server", "infrastructure"],
+  "title": "Square Candy - Server Overview",
+  "tags": ["squarecandy", "server", "infrastructure"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 1,
+    "version": 3,
     "refresh": "30s",
     "time": {
       "from": "now-6h",
@@ -12,44 +11,9 @@
     },
     "panels": [
       {
-        "title": "Server Health Status",
-        "type": "stat",
-        "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
-        "targets": [
-          {
-            "expr": "up{job=~\"node.*\"}",
-            "legendFormat": "{{instance}}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "colorMode": "background",
-          "graphMode": "none",
-          "reduceOptions": {
-            "values": false,
-            "calcs": ["lastNotNull"]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "red"},
-                {"value": 1, "color": "green"}
-              ]
-            },
-            "mappings": [
-              {"value": 0, "text": "DOWN"},
-              {"value": 1, "text": "UP"}
-            ]
-          }
-        }
-      },
-      {
         "title": "CPU Usage %",
         "type": "timeseries",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
         "targets": [
           {
             "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
@@ -71,16 +35,12 @@
               ]
             }
           }
-        },
-        "options": {
-          "tooltip": {"mode": "multi"},
-          "legend": {"displayMode": "table", "placement": "bottom"}
         }
       },
       {
-        "title": "Load Average (1m, 5m, 15m)",
+        "title": "Load Average",
         "type": "timeseries",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
         "targets": [
           {
             "expr": "node_load1",
@@ -105,9 +65,9 @@
         }
       },
       {
-        "title": "CPU Steal %",
+        "title": "CPU Steal",
         "type": "timeseries",
-        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 12},
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
         "targets": [
           {
             "expr": "avg by (instance) (irate(node_cpu_seconds_total{mode=\"steal\"}[5m])) * 100",
@@ -132,10 +92,10 @@
       {
         "title": "Memory Usage",
         "type": "timeseries",
-        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 12},
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
         "targets": [
           {
-            "expr": "100 * (1 - ((node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes))",
+            "expr": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -159,10 +119,10 @@
       {
         "title": "Swap Usage",
         "type": "timeseries",
-        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 12},
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
         "targets": [
           {
-            "expr": "100 - ((node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes) * 100)",
+            "expr": "100 * (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes))",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -184,9 +144,9 @@
         }
       },
       {
-        "title": "Swap Throughput",
+        "title": "Swapping Throughput",
         "type": "timeseries",
-        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 18},
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
         "targets": [
           {
             "expr": "irate(node_vmstat_pswpin[5m])",
@@ -201,18 +161,18 @@
         ],
         "fieldConfig": {
           "defaults": {
-            "unit": "ops"
+            "unit": "short"
           }
         }
       },
       {
         "title": "Disk Utilization %",
         "type": "timeseries",
-        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 18},
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
         "targets": [
           {
-            "expr": "100 - ((node_filesystem_avail_bytes{fstype=~\"ext4|xfs\",mountpoint=\"/\"} / node_filesystem_size_bytes{fstype=~\"ext4|xfs\",mountpoint=\"/\"}) * 100)",
-            "legendFormat": "{{instance}} - Root",
+            "expr": "100 - (100 * node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"})",
+            "legendFormat": "{{instance}}",
             "refId": "A"
           }
         ],
@@ -233,13 +193,13 @@
         }
       },
       {
-        "title": "Network Traffic - Requests/min",
+        "title": "Traffic: Requests per Minute",
         "type": "timeseries",
-        "gridPos": {"h": 7, "w": 12, "x": 0, "y": 24},
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
         "targets": [
           {
-            "expr": "sum by (instance) (rate(sqcdy_site_requests_total[5m]) * 60)",
-            "legendFormat": "{{instance}}",
+            "expr": "sum(sqcdy_site_requests_per_minute)",
+            "legendFormat": "Total Requests/min",
             "refId": "A"
           }
         ],
@@ -250,13 +210,13 @@
         }
       },
       {
-        "title": "Network Traffic - MB/min",
+        "title": "Traffic: MB per Minute",
         "type": "timeseries",
-        "gridPos": {"h": 7, "w": 12, "x": 12, "y": 24},
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 32},
         "targets": [
           {
-            "expr": "sum by (instance) (rate(sqcdy_site_traffic_bytes[5m]) * 60 / 1024 / 1024)",
-            "legendFormat": "{{instance}}",
+            "expr": "sum(sqcdy_site_bytes_per_minute) / 1024 / 1024",
+            "legendFormat": "Total MB/min",
             "refId": "A"
           }
         ],
@@ -267,5 +227,4 @@
         }
       }
     ]
-  }
 }
