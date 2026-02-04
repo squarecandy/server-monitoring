@@ -30,20 +30,28 @@ GRAFANA_CLOUD_API_KEY="${GRAFANA_CLOUD_API_KEY:-}"
 INSTALL_DIR="/opt/squarecandy-monitoring"
 EXPORTER_USER="sqcdy-monitor"
 
-# Check for required environment variables
-if [ -z "$GRAFANA_CLOUD_URL" ] || [ -z "$GRAFANA_CLOUD_USER" ] || [ -z "$GRAFANA_CLOUD_API_KEY" ]; then
-    echo -e "${YELLOW}⚠ Grafana Cloud credentials not set${NC}"
+# Prompt for Grafana Cloud credentials if not set
+if [ -z "$GRAFANA_CLOUD_URL" ]; then
+    echo -e "${BLUE}Grafana Cloud Configuration${NC}"
+    echo "Please enter your Grafana Cloud details"
     echo ""
-    echo "Please set the following environment variables:"
-    echo "  export GRAFANA_CLOUD_URL=\"https://prometheus-xxx.grafana.net/api/prom/push\""
-    echo "  export GRAFANA_CLOUD_USER=\"your-instance-id\"  # From Grafana Cloud dashboard"
-    echo "  export GRAFANA_CLOUD_API_KEY=\"your-api-token\"  # From Grafana Cloud dashboard"
-    echo ""
-    read -p "Continue anyway? (y/N) " -n 1 -r
+    read -p "Prometheus Push URL (e.g., https://prometheus-xxx.grafana.net/api/prom/push): " GRAFANA_CLOUD_URL
+fi
+
+if [ -z "$GRAFANA_CLOUD_USER" ]; then
+    read -p "Instance ID (username from Grafana Cloud): " GRAFANA_CLOUD_USER
+fi
+
+if [ -z "$GRAFANA_CLOUD_API_KEY" ]; then
+    read -sp "API Token (password from Grafana Cloud): " GRAFANA_CLOUD_API_KEY
     echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
+fi
+
+# Validate credentials are provided
+if [ -z "$GRAFANA_CLOUD_URL" ] || [ -z "$GRAFANA_CLOUD_USER" ] || [ -z "$GRAFANA_CLOUD_API_KEY" ]; then
+    echo -e "${RED}✗ Grafana Cloud credentials are required${NC}"
+    echo "Installation cannot proceed without valid credentials."
+    exit 1
 fi
 
 echo -e "${GREEN}✓ Prerequisites check passed${NC}"
