@@ -36,6 +36,28 @@ fi
 echo "Grafana URL: $GRAFANA_URL"
 echo ""
 
+# Create/get folder
+echo "Checking for 'Square Candy' folder..."
+folder_response=$(curl -s \
+    -H "Authorization: Bearer $GRAFANA_API_TOKEN" \
+    "$GRAFANA_URL/api/folders")
+
+folder_uid=$(echo "$folder_response" | jq -r '.[] | select(.title=="Square Candy") | .uid')
+
+if [ -z "$folder_uid" ]; then
+    echo "Creating 'Square Candy' folder..."
+    create_response=$(curl -s -X POST \
+        -H "Authorization: Bearer $GRAFANA_API_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d '{"title":"Square Candy"}' \
+        "$GRAFANA_URL/api/folders")
+    folder_uid=$(echo "$create_response" | jq -r '.uid')
+    echo "  ✓ Folder created (UID: $folder_uid)"
+else
+    echo "  ✓ Folder exists (UID: $folder_uid)"
+fi
+echo ""
+
 # Upload each dashboard
 for dashboard_file in "$DASHBOARDS_DIR"/*.json; do
     dashboard_name=$(basename "$dashboard_file")
@@ -45,7 +67,8 @@ for dashboard_file in "$DASHBOARDS_DIR"/*.json; do
     dashboard_json=$(cat "$dashboard_file")
     payload=$(jq -n \
         --argjson dashboard "$dashboard_json" \
-        '{dashboard: $dashboard, overwrite: true, message: "Updated via API"}')
+        --arg folderUid "$folder_uid" \
+        '{dashboard: $dashboard, folderUid: $folderUid, overwrite: true, message: "Updated via API"}')
     
     # Upload to Grafana
     response=$(curl -s -w "\n%{http_code}" \
@@ -61,7 +84,7 @@ for dashboard_file in "$DASHBOARDS_DIR"/*.json; do
     
     if [ "$http_code" = "200" ]; then
         echo "  ✓ Success"
-        # Extract dashboard URL if available
+        # Extract dashboard URL
         dashboard_url=$(echo "$body" | jq -r '.url // empty')
         if [ -n "$dashboard_url" ]; then
             echo "  → $GRAFANA_URL$dashboard_url"
