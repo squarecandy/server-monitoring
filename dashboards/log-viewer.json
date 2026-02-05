@@ -57,7 +57,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status=~\"$status\"}",
+          "expr": "{job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"} | regexp ` (?P<status>\\\\d{3}) ` | status=~\"$status\"",
           "refId": "A"
         }
       ],
@@ -81,7 +81,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (status) (rate({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"}[1m]))",
+          "expr": "sum by (status) (rate({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"} | regexp ` (?P<status>\\\\d{3}) ` [1m]))",
           "legendFormat": "{{status}}",
           "refId": "A"
         }
@@ -106,7 +106,7 @@
       },
       "targets": [
         {
-          "expr": "topk(20, sum by (url) (count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status=~\"$status\"} | regexp `\\\"(?P<method>\\\\S+) (?P<url>\\\\S+) ` | __error__=\"\" [$__range])))",
+          "expr": "topk(20, sum by (url) (count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"} | regexp `\\\"(?P<method>\\\\S+) (?P<url>\\\\S+) ` | regexp ` (?P<status>\\\\d{3}) ` | status=~\"$status\" | __error__=\"\" [$__range])))",
           "refId": "A",
           "instant": true,
           "legendFormat": "{{url}}"

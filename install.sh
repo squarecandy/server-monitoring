@@ -343,13 +343,16 @@ logs:
                 instance: $(hostname)
                 __path__: /var/www/vhosts/*/logs/*access*log
           pipeline_stages:
+            # Drop monitoring/bot traffic to reduce noise and costs
+            - drop:
+                expression: '(UptimeRobot|neat\.software\.Ping|Googlebot|bingbot|monitoring)'
             - regex:
                 expression: '^(?P<ip>[\d.]+) - (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+) "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
-            - labels:
-                status:
             - template:
                 source: domain
                 template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .filename }}'
+            - labels:
+                domain:
             - labeldrop:
                 - filename
         
@@ -365,11 +368,12 @@ logs:
           pipeline_stages:
             - regex:
                 expression: '^\[(?P<time>[^\]]+)\] \[(?P<level>\w+)\]'
-            - labels:
-                level:
             - template:
                 source: domain
                 template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .filename }}'
+            - labels:
+                level:
+                domain:
             - labeldrop:
                 - filename
 

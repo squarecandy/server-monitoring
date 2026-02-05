@@ -99,6 +99,19 @@ docs/               - Documentation
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Customization and tuning
 - **[Architecture](docs/ARCHITECTURE.md)** - How everything works
 
+## Roadmap / Future Ideas
+
+### Log Collection Enhancements
+- **Separate PHP error logs at server level**: Parse PHP fatal errors separately from nginx info messages for better filtering
+- **Error log level filtering**: Filter error logs by severity (warn/error only) once PHP errors are separated to reduce noise and costs
+- **Log sampling**: Implement sampling for high-traffic sites (keep 10-25% of logs) to reduce Loki costs while maintaining visibility
+- **Domain grouping**: Group staging/dev/prod environments into `environment` + `site` labels for better organization (useful when many environment copies exist)
+
+### Monitoring Expansion
+- **Additional log sources**: Mail logs, PHP-FPM logs, database slow queries
+- **Custom business metrics**: Track application-specific events (form submissions, user registrations, etc.)
+- **Multi-region support**: Monitor servers across different geographic regions
+
 ## What You Get
 
 After installation, you'll have:
