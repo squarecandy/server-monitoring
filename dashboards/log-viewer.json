@@ -39,7 +39,7 @@
           "type": "loki",
           "uid": "grafanacloud-squarecandy-logs"
         },
-        "query": "label_values({job=\"access-logs\"}, status_range)",
+        "query": "label_values({job=~\"access-logs|error-logs\"}, status_range)",
         "current": {
           "text": "All",
           "value": "$__all"
