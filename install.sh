@@ -4,6 +4,22 @@
 
 set -e
 
+# Parse command line arguments
+DRY_RUN=false
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [--dry-run]"
+            exit 1
+            ;;
+    esac
+done
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -11,13 +27,20 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${BLUE}========================================${NC}"
+    echo -e "${BLUE}DRY RUN MODE - No changes will be made${NC}"
+    echo -e "${BLUE}========================================${NC}"
+    echo ""
+fi
+
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}Square Candy Server Monitoring Installer${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 
-# Check if running as root
-if [ "$EUID" -ne 0 ]; then
+# Check if running as root (skip in dry-run mode)
+if [ "$EUID" -ne 0 ] && [ "$DRY_RUN" = false ]; then
     echo -e "${RED}✗ This script must be run as root${NC}"
     echo "Please run: sudo $0"
     exit 1
@@ -249,8 +272,6 @@ integrations:
 
 EOF
 
-# Add Loki configuration if enabled
-if [ "$LOKI_ENABLED" = true ]; then
 # Add Loki configuration if enabled
 if [ "$LOKI_ENABLED" = true ]; then
 cat >> /etc/grafana-agent.yaml <<LOKIEOF
