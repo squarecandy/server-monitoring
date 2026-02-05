@@ -21,8 +21,8 @@ graphana-cloud/
 ├── alerts/                        # Alert rule configurations
 │   └── alert-rules.yaml          # Pre-configured alert thresholds
 │
-├── deployment/                    # Installation scripts
-│   └── install.sh                # Automated installer
+├── install.sh                     # One-command installation script
+├── deploy.sh                      # Update existing installations
 │
 ├── config/                        # Configuration examples
 │   └── example.env               # Environment variable examples

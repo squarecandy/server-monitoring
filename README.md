@@ -22,19 +22,7 @@ Platform-agnostic monitoring solution for Plesk, GridPane, and custom Ubuntu ser
 
 ## Installation
 
-1. Sign up for [Grafana Cloud](https://grafana.com/products/cloud/) (free tier works)
-2. Get your credentials from Stack → Prometheus → Send Metrics
-3. Run on your server:
-   ```bash
-   cd /tmp
-   git clone https://github.com/squarecandy/server-monitoring.git
-   cd server-monitoring
-   sudo bash install.sh
-   ```
-   You'll be prompted for Grafana Cloud credentials (or create `.grafana-config-server` file first)
-4. Import dashboards from `dashboards/` into Grafana Cloud
-
-See [INSTALLATION.md](docs/INSTALLATION.md) for detailed instructions.
+See [INSTALLATION.md](docs/INSTALLATION.md) for complete installation instructions.
 
 ## Deployment Workflows
 
@@ -96,9 +84,8 @@ dashboards/         - Grafana dashboard JSON files
   
 alerts/             - Alert rule configurations
   
-deployment/         - Installation and setup scripts
-  install.sh
-  configure.sh
+install.sh          - One-command installation script
+deploy.sh           - Update existing installations
   
 config/             - Configuration templates
   

@@ -25,29 +25,44 @@ git clone https://github.com/squarecandy/server-monitoring.git
 cd server-monitoring
 ```
 
-## Step 3: Set Credentials
+## Step 3: Create Configuration File
+
+Create a `.grafana-config-server` file in the server-monitoring directory:
 
 ```bash
-export GRAFANA_CLOUD_URL="https://prometheus-xxx.grafana.net/api/prom/push"
-export GRAFANA_CLOUD_USER="123456"
-export GRAFANA_CLOUD_API_KEY="glc_..."
+cd /tmp/server-monitoring
+cp .grafana-config-server.example .grafana-config-server
+nano .grafana-config-server
 ```
 
-Verify (optional):
+Edit the file with your credentials:
+
 ```bash
-curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_CLOUD_API_KEY}" -X POST "${GRAFANA_CLOUD_URL}" \
-  -H "Content-Type: application/x-protobuf" --data-binary @/dev/null
+# Prometheus Push URL
+PROMETHEUS_URL=https://prometheus-xxx.grafana.net/api/prom/push
+
+# Prometheus Instance ID (username)
+PROMETHEUS_INSTANCE_ID=123456
+
+# Prometheus API Token
+PROMETHEUS_API_TOKEN=glc_...
+
+# Loki Push URL
+LOKI_URL=https://logs-xxx.grafana.net/loki/api/v1/push
+
+# Loki Instance ID (username)
+LOKI_INSTANCE_ID=654321
+
+# Loki API Token
+LOKI_API_TOKEN=glc_...
 ```
 
-**Expected responses (all mean auth is working):**
-- ✅ `404 page not found`
-- ✅ `snappy: corrupt input` or `getting snappy decoded length`
-- ❌ `401 Unauthorized` = wrong credentials
+**Security:** The installer will automatically copy this file to `/opt/squarecandy-monitoring/.grafana-config-server` with secure permissions (600, root-only).
 
 ## Step 4: Install
 
 ```bash
-sudo -E bash deployment/install.sh
+sudo bash install.sh
 ```
 
 The installer will:

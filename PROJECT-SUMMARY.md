@@ -106,7 +106,7 @@ git push -u origin main
 ### 3. Test on One Server (10 min)
 ```bash
 # On a test server
-curl -L https://raw.githubusercontent.com/squarecandy/server-monitoring/main/deployment/install.sh > install.sh
+curl -L https://raw.githubusercontent.com/squarecandy/server-monitoring/main/install.sh > install.sh
 export GRAFANA_CLOUD_URL="your-url"
 export GRAFANA_CLOUD_API_KEY="your-key"
 sudo -E bash install.sh
@@ -142,8 +142,8 @@ graphana-cloud/
 ├── alerts/
 │   └── alert-rules.yaml     # 227 lines, ready to import
 │
-├── deployment/
-│   └── install.sh           # 285 lines, one-command setup
+├── install.sh               # 528 lines, one-command setup
+├── deploy.sh                # Update script for existing installations
 │
 └── docs/                    # 4 guides, 1366 lines
     ├── QUICKSTART.md
@@ -177,7 +177,7 @@ Every 15 minutes, see:
 
 ### 🌟 One-Command Installation
 ```bash
-sudo -E bash deployment/install.sh
+sudo bash install.sh
 ```
 That's it. Everything else is automatic.
 
