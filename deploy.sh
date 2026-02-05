@@ -33,23 +33,6 @@ fi
 echo ""
 echo "Deploying files..."
 
-# Copy config file if it exists in temp dir
-if [ -f "$TEMP_DIR/.grafana-config-server" ]; then
-    echo "  - Copying .grafana-config-server..."
-    cp "$TEMP_DIR/.grafana-config-server" "$INSTALL_DIR/.grafana-config-server"
-    chmod 600 "$INSTALL_DIR/.grafana-config-server"
-    chown root:root "$INSTALL_DIR/.grafana-config-server"
-    echo "    ✓ Config file secured"
-    
-    # Re-run install.sh to update grafana-agent.yaml with new credentials
-    echo "  - Updating grafana-agent configuration..."
-    cd "$TEMP_DIR"
-    ./install.sh --dry-run >/dev/null 2>&1 || true
-    if [ -f "$TEMP_DIR/install.sh" ]; then
-        ./install.sh 2>&1 | grep -E "(✓|✗|Configuration|Loki)" || true
-    fi
-fi
-
 # Copy all exporter files
 echo "  - Copying exporters..."
 cp "$TEMP_DIR/exporters/platform-detect.sh" "$INSTALL_DIR/exporters/"
