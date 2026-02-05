@@ -129,13 +129,8 @@ docs/               - Documentation
 ## Platform Support
 
 - **Plesk** - Uses Plesk CLI and database
-- **GridPane** - Uses file structure and nginx logs
-- **Ubuntu Custom** - Generic Linux metric collection
-
-## Cost Estimate
-
-- **Grafana Cloud Free Tier**: Suitable for 1-3 servers
-- **Grafana Cloud Paid**: ~$49-99/month for 180-day retention across multiple servers
+- **GridPane** - Uses file structure and nginx logs (full support @TODO)
+- **Ubuntu Custom** - Generic Linux metric collection (full support @TODO)
 
 ## Documentation
 
@@ -143,18 +138,18 @@ docs/               - Documentation
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Customization and tuning
 - **[Architecture](docs/ARCHITECTURE.md)** - How everything works
 
-## Roadmap / Future Ideas
+## Roadmap
 
-### Log Collection Enhancements
+- add navigation between the 4 dashboards. Keep the datetime, server and domain
+- add support for deploying on custom Ubuntu servers
+- add support for deploying on GridPane
+- add backup status tracking for both db and files (after we revise our backup systems)
 - **Separate PHP error logs at server level**: Parse PHP fatal errors separately from nginx info messages for better filtering
 - **Error log level filtering**: Filter error logs by severity (warn/error only) once PHP errors are separated to reduce noise and costs
 - **Log sampling**: Implement sampling for high-traffic sites (keep 10-25% of logs) to reduce Loki costs while maintaining visibility
 - **Domain grouping**: Group staging/dev/prod environments into `environment` + `site` labels for better organization (useful when many environment copies exist)
-
-### Monitoring Expansion
-- **Additional log sources**: Mail logs, PHP-FPM logs, database slow queries
-- **Custom business metrics**: Track application-specific events (form submissions, user registrations, etc.)
-- **Multi-region support**: Monitor servers across different geographic regions
+- Group most common error messages, sort by volume (how to find similar but not 100% identical messages?)
+- **Additional log sources**: PHP-FPM logs, database slow queries
 
 ## What You Get
 
@@ -168,27 +163,3 @@ After installation, you'll have:
 - **180-Day History**: With paid Grafana Cloud plan (~$50/mo)
 - **Smart Alerts**: Email and Slack notifications for issues
 - **No Performance Impact**: <1% CPU overhead
-
-## Screenshots
-
-*(Import the dashboards to see them in action!)*
-
-**Server Overview Dashboard:**
-- All your servers at a glance
-- CPU, memory, disk, network trends
-- Color-coded health indicators
-
-**Site Comparison Dashboard:**
-- Compare all sites side-by-side
-- Identify resource hogs quickly
-- Overlay charts show patterns
-
-**Site Drilldown Dashboard:**
-- Deep dive into any single site
-- See top IPs hitting your site
-- Track backup status
-- Identify traffic sources
-
-## License
-
-MIT License - Square Candy
