@@ -30,6 +30,17 @@ GRAFANA_CLOUD_API_KEY="${GRAFANA_CLOUD_API_KEY:-}"
 INSTALL_DIR="/opt/squarecandy-monitoring"
 EXPORTER_USER="sqcdy-monitor"
 
+# Check if existing config exists and extract credentials
+if [ -f "/etc/grafana-agent.yaml" ] && [ -z "$GRAFANA_CLOUD_URL" ]; then
+    echo -e "${BLUE}Found existing Grafana Agent configuration${NC}"
+    echo "Using credentials from /etc/grafana-agent.yaml"
+    GRAFANA_CLOUD_URL=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "url:" | head -1 | sed 's/.*url: //' | tr -d ' ')
+    GRAFANA_CLOUD_USER=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "username:" | head -1 | sed 's/.*username: //' | tr -d ' ')
+    GRAFANA_CLOUD_API_KEY=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "password:" | head -1 | sed 's/.*password: //' | tr -d ' ')
+    echo -e "${GREEN}✓ Loaded existing credentials${NC}"
+    echo ""
+fi
+
 # Prompt for Grafana Cloud credentials if not set
 if [ -z "$GRAFANA_CLOUD_URL" ]; then
     echo -e "${BLUE}Grafana Cloud Configuration${NC}"
