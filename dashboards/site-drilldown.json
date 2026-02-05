@@ -4,7 +4,7 @@
   "tags": ["squarecandy", "sites"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 11,
+    "version": 13,
     "refresh": "1m",
     "time": {
       "from": "now-6h",
@@ -96,9 +96,168 @@
         }
       },
       {
+        "title": "HTTP Status Codes Over Time",
+        "type": "timeseries",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 22},
+        "targets": [
+          {
+            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"2..\"}[5m]))",
+            "legendFormat": "2xx Success",
+            "refId": "A"
+          },
+          {
+            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"3..\"}[5m]))",
+            "legendFormat": "3xx Redirect",
+            "refId": "B"
+          },
+          {
+            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"4..\"}[5m]))",
+            "legendFormat": "4xx Client Error",
+            "refId": "C"
+          },
+          {
+            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"5..\"}[5m]))",
+            "legendFormat": "5xx Server Error",
+            "refId": "D"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "custom": {
+              "fillOpacity": 10,
+              "spanNulls": true
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "4xx Client Error"},
+              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "5xx Server Error"},
+              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+            }
+          ]
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "title": "Error Rate %",
+        "type": "stat",
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 22},
+        "targets": [
+          {
+            "expr": "100 * sum(rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"[45]..\"}[5m])) / sum(rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[5m]))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "yellow"},
+                {"value": 5, "color": "orange"},
+                {"value": 10, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "textMode": "auto"
+        }
+      },
+      {
+        "title": "Top Error URLs (4xx/5xx)",
+        "type": "table",
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 22},
+        "targets": [
+          {
+            "expr": "topk(10, sum by (domain, url) (increase(sqcdy_site_top_url_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range])))",
+            "format": "table",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 0
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "URL"},
+              "properties": [
+                {
+                  "id": "links",
+                  "value": [
+                    {
+                      "title": "Open URL",
+                      "url": "https://${__data.fields.domain}${__data.fields.url}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "transformations": [
+          {
+            "id": "groupBy",
+            "options": {
+              "fields": {
+                "Value": {
+                  "aggregations": ["lastNotNull"],
+                  "operation": "aggregate"
+                },
+                "domain": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                },
+                "url": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                }
+              }
+            }
+          },
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "__name__": true, "instance": true, "job": true},
+              "renameByName": {
+                "domain": "Domain",
+                "url": "URL",
+                "Value (lastNotNull)": "Errors"
+              }
+            }
+          },
+          {
+            "id": "sortBy",
+            "options": {
+              "sort": [
+                {
+                  "field": "Errors",
+                  "desc": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
         "title": "Top IPs",
         "type": "table",
-        "gridPos": {"h": 10, "w": 8, "x": 0, "y": 24},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 24},
         "targets": [
           {
             "expr": "topk(20, sum by (ip) (sqcdy_site_top_ip_requests{instance=~\"$server\", domain=~\"$domain\"}))",
@@ -148,7 +307,7 @@
       {
         "title": "Top User Agents",
         "type": "table",
-        "gridPos": {"h": 10, "w": 8, "x": 8, "y": 24},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 24},
         "targets": [
           {
             "expr": "topk(20, sum by (user_agent) (sqcdy_site_top_user_agent_requests{instance=~\"$server\", domain=~\"$domain\"}))",
@@ -198,10 +357,31 @@
       {
         "title": "Top URLs",
         "type": "table",
-        "gridPos": {"h": 10, "w": 8, "x": 16, "y": 24},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 32},
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 0
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "URL"},
+              "properties": [
+                {
+                  "id": "links",
+                  "value": [
+                    {
+                      "title": "Open URL",
+                      "url": "https://${__data.fields.domain}${__data.fields.url}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         "targets": [
           {
-            "expr": "topk(20, sum by (url) (sqcdy_site_top_url_requests{instance=~\"$server\", domain=~\"$domain\"}))",
+            "expr": "topk(20, sum by (domain, url) (sqcdy_site_top_url_requests{instance=~\"$server\", domain=~\"$domain\"}))",
             "format": "table",
             "refId": "A"
           }
@@ -215,6 +395,10 @@
                   "aggregations": ["lastNotNull"],
                   "operation": "aggregate"
                 },
+                "domain": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                },
                 "url": {
                   "aggregations": [],
                   "operation": "groupby"
@@ -227,6 +411,7 @@
             "options": {
               "excludeByName": {"Time": true, "__name__": true, "instance": true, "job": true},
               "renameByName": {
+                "domain": "Domain",
                 "url": "URL",
                 "Value (lastNotNull)": "Requests"
               }
@@ -248,7 +433,7 @@
       {
         "title": "HTTP Status Codes",
         "type": "piechart",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 26},
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 32},
         "targets": [
           {
             "expr": "sum by (status) (sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"})",
