@@ -140,7 +140,6 @@ docs/               - Documentation
 
 ## Roadmap
 
-- add navigation between the 4 dashboards. Keep the datetime, server and domain
 - add support for deploying on custom Ubuntu servers
 - add support for deploying on GridPane
 - add backup status tracking for both db and files (after we revise our backup systems)
@@ -163,6 +162,15 @@ After installation, you'll have:
 - **180-Day History**: With paid Grafana Cloud plan (~$50/mo)
 - **Smart Alerts**: Email and Slack notifications for issues
 - **No Performance Impact**: <1% CPU overhead
+
+## Valid 'icon' Values for Grafana Links
+- external link
+- dashboard
+- question
+- info
+- bolt
+- doc
+- cloud
 
 ## License
 
