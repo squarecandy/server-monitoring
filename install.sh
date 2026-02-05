@@ -283,7 +283,7 @@ logs:
                 user_agent:
             - template:
                 source: domain
-                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\\$1" .filename }}'
+                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .filename }}'
             - labeldrop:
                 - filename
         
@@ -326,9 +326,12 @@ if [ "$LOKI_ENABLED" = true ]; then
         fi
     fi
     
-    # Grant grafana-agent read access to Plesk log directories
+    # Grant grafana-agent access to traverse domain directories and read logs
+    setfacl -m u:grafana-agent:x /var/www/vhosts/*/ 2>/dev/null
     setfacl -R -m u:grafana-agent:rX /var/www/vhosts/*/logs/ 2>/dev/null
     setfacl -R -m d:u:grafana-agent:rX /var/www/vhosts/*/logs/ 2>/dev/null
+    setfacl -R -m u:grafana-agent:r /var/www/vhosts/*/logs/*access*log 2>/dev/null
+    setfacl -R -m u:grafana-agent:r /var/www/vhosts/*/logs/*error*log 2>/dev/null
     
     echo -e "${GREEN}✓ Log access configured for grafana-agent user${NC}"
 fi
