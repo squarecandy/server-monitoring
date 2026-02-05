@@ -458,12 +458,18 @@ EOF
 systemctl daemon-reload
 echo -e "${GREEN}✓ Systemd services created${NC}"
 
-# Enable and start services
+# Enable and start/restart services
 echo "Starting services..."
-systemctl enable --now grafana-agent
-systemctl enable --now sqcdy-site-metrics
-systemctl enable --now sqcdy-user-metrics
-systemctl enable --now sqcdy-log-analyzer
+systemctl enable grafana-agent
+systemctl enable sqcdy-site-metrics
+systemctl enable sqcdy-user-metrics
+systemctl enable sqcdy-log-analyzer
+
+# Restart to pick up any config changes
+systemctl restart grafana-agent
+systemctl restart sqcdy-site-metrics
+systemctl restart sqcdy-user-metrics
+systemctl restart sqcdy-log-analyzer
 
 sleep 3
 

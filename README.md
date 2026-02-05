@@ -26,14 +26,58 @@ Platform-agnostic monitoring solution for Plesk, GridPane, and custom Ubuntu ser
 2. Get your credentials from Stack → Prometheus → Send Metrics
 3. Run on your server:
    ```bash
-   export GRAFANA_CLOUD_URL="https://prometheus-xxx.grafana.net/api/prom/push"
-   export GRAFANA_CLOUD_USER="123456"  # Instance ID
-   export GRAFANA_CLOUD_API_KEY="glc_..."  # API Token
-   sudo -E bash deployment/install.sh
+   cd /tmp
+   git clone https://github.com/squarecandy/server-monitoring.git
+   cd server-monitoring
+   sudo bash install.sh
    ```
+   You'll be prompted for Grafana Cloud credentials (or create `.grafana-config-server` file first)
 4. Import dashboards from `dashboards/` into Grafana Cloud
 
 See [INSTALLATION.md](docs/INSTALLATION.md) for detailed instructions.
+
+## Deployment Workflows
+
+### Initial Setup: `install.sh`
+**When to use:** First-time installation or updating Grafana Agent configuration
+
+- Installs system packages (Grafana Agent, Python dependencies)
+- Creates monitoring user and directories
+- Generates `/etc/grafana-agent.yaml` from credentials
+- Creates systemd service files
+- Enables and restarts all services
+- Sets up log file permissions (ACLs)
+
+**Example:**
+```bash
+ssh server
+cd /tmp/server-monitoring
+sudo git pull
+sudo bash install.sh
+```
+
+### Code Updates: `deploy.sh`
+**When to use:** Updating exporter Python/Bash scripts only
+
+- Pulls latest code from GitHub
+- Regenerates grafana-agent.yaml (picks up pipeline changes)
+- Copies updated exporter files
+- Restarts all services
+- Validates endpoints
+
+**Example:**
+```bash
+ssh server
+sudo bash /opt/squarecandy-monitoring/deploy.sh
+# OR from /tmp/server-monitoring:
+sudo bash deploy.sh
+```
+
+**Quick Reference:**
+- Config change (Loki labels, drop rules)? → Run `install.sh` OR `deploy.sh` (both now regenerate config)
+- Exporter code change (Python/Bash)? → Run `deploy.sh`
+- New server setup? → Run `install.sh`
+- Not sure? → Run `install.sh` (safe to re-run)
 
 ## Directory Structure
 

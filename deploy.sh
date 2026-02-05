@@ -33,6 +33,15 @@ fi
 echo ""
 echo "Deploying files..."
 
+# Regenerate grafana-agent config if install.sh exists
+if [ -f "$TEMP_DIR/install.sh" ]; then
+    echo "  - Regenerating grafana-agent configuration..."
+    # Run install.sh to update config (it will skip package installation)
+    cd "$TEMP_DIR"
+    bash install.sh > /dev/null 2>&1 || true
+    echo "  - Configuration updated"
+fi
+
 # Copy all exporter files
 echo "  - Copying exporters..."
 cp "$TEMP_DIR/exporters/platform-detect.sh" "$INSTALL_DIR/exporters/"
