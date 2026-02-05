@@ -370,6 +370,7 @@ logs:
                 job: error-logs
                 instance: $(hostname)
                 __path__: /var/www/vhosts/*/logs/*error*log
+                status_range: error
           pipeline_stages:
             # Extract domain from filename
             - regex:
