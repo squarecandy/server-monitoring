@@ -342,17 +342,14 @@ logs:
                 job: access-logs
                 instance: $(hostname)
                 __path__: /var/www/vhosts/*/logs/*access*log
+          relabel_configs:
+            - source_labels: [__path__]
+              regex: '/var/www/vhosts/([^/]+)/.*'
+              target_label: domain
           pipeline_stages:
             # Drop monitoring/bot traffic to reduce noise and costs
             - drop:
                 expression: '.*(UptimeRobot|neat\\.software\\.Ping|Googlebot|bingbot|monitoring).*'
-            - regex:
-                expression: '^(?P<ip>[\d.]+) - (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+) "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
-            - template:
-                source: domain
-                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .__path__ }}'
-            - labels:
-                domain:
         
         # Plesk error logs
         - job_name: error-logs
