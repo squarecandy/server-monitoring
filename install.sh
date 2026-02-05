@@ -24,45 +24,68 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Configuration
-GRAFANA_CLOUD_URL="${GRAFANA_CLOUD_URL:-}"
-GRAFANA_CLOUD_USER="${GRAFANA_CLOUD_USER:-}"
-GRAFANA_CLOUD_API_KEY="${GRAFANA_CLOUD_API_KEY:-}"
+PROMETHEUS_URL="${PROMETHEUS_URL:-}"
+PROMETHEUS_INSTANCE_ID="${PROMETHEUS_INSTANCE_ID:-}"
+PROMETHEUS_API_TOKEN="${PROMETHEUS_API_TOKEN:-}"
+LOKI_URL="${LOKI_URL:-}"
+LOKI_INSTANCE_ID="${LOKI_INSTANCE_ID:-}"
+LOKI_API_TOKEN="${LOKI_API_TOKEN:-}"
 INSTALL_DIR="/opt/squarecandy-monitoring"
 EXPORTER_USER="sqcdy-monitor"
 
 # Check if existing config exists and extract credentials
-if [ -f "/etc/grafana-agent.yaml" ] && [ -z "$GRAFANA_CLOUD_URL" ]; then
+if [ -f "/etc/grafana-agent.yaml" ] && [ -z "$PROMETHEUS_URL" ]; then
     echo -e "${BLUE}Found existing Grafana Agent configuration${NC}"
     echo "Using credentials from /etc/grafana-agent.yaml"
-    GRAFANA_CLOUD_URL=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "url:" | head -1 | sed 's/.*url: //' | tr -d ' ')
-    GRAFANA_CLOUD_USER=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "username:" | head -1 | sed 's/.*username: //' | tr -d ' ')
-    GRAFANA_CLOUD_API_KEY=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "password:" | head -1 | sed 's/.*password: //' | tr -d ' ')
-    echo -e "${GREEN}✓ Loaded existing credentials${NC}"
+    PROMETHEUS_URL=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "url:" | head -1 | sed 's/.*url: //' | tr -d ' ')
+    PROMETHEUS_INSTANCE_ID=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "username:" | head -1 | sed 's/.*username: //' | tr -d ' ')
+    PROMETHEUS_API_TOKEN=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "password:" | head -1 | sed 's/.*password: //' | tr -d ' ')
+    echo -e "${GREEN}✓ Loaded existing Prometheus credentials${NC}"
     echo ""
 fi
 
-# Prompt for Grafana Cloud credentials if not set
-if [ -z "$GRAFANA_CLOUD_URL" ]; then
+# Prompt for credentials if not set (backward compatibility)
+if [ -z "$PROMETHEUS_URL" ]; then
     echo -e "${BLUE}Grafana Cloud Configuration${NC}"
     echo "Please enter your Grafana Cloud details"
     echo ""
-    read -p "Prometheus Push URL (e.g., https://prometheus-xxx.grafana.net/api/prom/push): " GRAFANA_CLOUD_URL
+    read -p "Prometheus Push URL (e.g., https://prometheus-xxx.grafana.net/api/prom/push): " PROMETHEUS_URL
 fi
 
-if [ -z "$GRAFANA_CLOUD_USER" ]; then
-    read -p "Instance ID (username from Grafana Cloud): " GRAFANA_CLOUD_USER
+if [ -z "$PROMETHEUS_INSTANCE_ID" ]; then
+    read -p "Prometheus Instance ID: " PROMETHEUS_INSTANCE_ID
 fi
 
-if [ -z "$GRAFANA_CLOUD_API_KEY" ]; then
-    read -sp "API Token (password from Grafana Cloud): " GRAFANA_CLOUD_API_KEY
+if [ -z "$PROMETHEUS_API_TOKEN" ]; then
+    read -sp "Prometheus API Token: " PROMETHEUS_API_TOKEN
+    echo
+fi
+
+if [ -z "$LOKI_URL" ]; then
+    read -p "Loki Push URL (e.g., https://logs-xxx.grafana.net/loki/api/v1/push): " LOKI_URL
+fi
+
+if [ -z "$LOKI_INSTANCE_ID" ]; then
+    read -p "Loki Instance ID: " LOKI_INSTANCE_ID
+fi
+
+if [ -z "$LOKI_API_TOKEN" ]; then
+    read -sp "Loki API Token: " LOKI_API_TOKEN
     echo
 fi
 
 # Validate credentials are provided
-if [ -z "$GRAFANA_CLOUD_URL" ] || [ -z "$GRAFANA_CLOUD_USER" ] || [ -z "$GRAFANA_CLOUD_API_KEY" ]; then
-    echo -e "${RED}✗ Grafana Cloud credentials are required${NC}"
+if [ -z "$PROMETHEUS_URL" ] || [ -z "$PROMETHEUS_INSTANCE_ID" ] || [ -z "$PROMETHEUS_API_TOKEN" ]; then
+    echo -e "${RED}✗ Prometheus credentials are required${NC}"
     echo "Installation cannot proceed without valid credentials."
     exit 1
+fi
+
+if [ -z "$LOKI_URL" ] || [ -z "$LOKI_INSTANCE_ID" ] || [ -z "$LOKI_API_TOKEN" ]; then
+    echo -e "${YELLOW}⚠ Loki credentials not provided - logs will not be collected${NC}"
+    LOKI_ENABLED=false
+else
+    LOKI_ENABLED=true
 fi
 
 echo -e "${GREEN}✓ Prerequisites check passed${NC}"
@@ -165,10 +188,10 @@ metrics:
   global:
     scrape_interval: 60s
     remote_write:
-      - url: ${GRAFANA_CLOUD_URL}
+      - url: ${PROMETHEUS_URL}
         basic_auth:
-          username: ${GRAFANA_CLOUD_USER}
-          password: ${GRAFANA_CLOUD_API_KEY}
+          username: ${PROMETHEUS_INSTANCE_ID}
+          password: ${PROMETHEUS_API_TOKEN}
   
   configs:
     - name: squarecandy
@@ -204,8 +227,69 @@ metrics:
 integrations:
   node_exporter:
     enabled: true
-    
+
 EOF
+
+# Add Loki configuration if enabled
+if [ "$LOKI_ENABLED" = true ]; then
+cat >> /etc/grafana-agent.yaml <<EOF
+logs:
+  configs:
+    - name: squarecandy
+      clients:
+        - url: ${LOKI_URL}
+          basic_auth:
+            username: ${LOKI_INSTANCE_ID}
+            password: ${LOKI_API_TOKEN}
+      positions:
+        filename: /tmp/positions.yaml
+      scrape_configs:
+        # Plesk access logs
+        - job_name: plesk-access
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: access-logs
+                instance: $(hostname)
+                __path__: /var/www/vhosts/*/logs/*access*log
+          pipeline_stages:
+            - regex:
+                expression: '^(?P<ip>[\\d.]+) - (?P<user>\\S+) \\[(?P<time>[^\\]]+)\\] "(?P<method>\\S+) (?P<url>\\S+) \\S+" (?P<status>\\d+) (?P<size>\\d+) "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
+            - labels:
+                ip:
+                method:
+                url:
+                status:
+                user_agent:
+            - template:
+                source: domain
+                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\\$1" .filename }}'
+            - labeldrop:
+                - filename
+        
+        # Plesk error logs
+        - job_name: plesk-error
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: error-logs
+                instance: $(hostname)
+                __path__: /var/www/vhosts/*/logs/*error*log
+          pipeline_stages:
+            - regex:
+                expression: '^\\[(?P<time>[^\\]]+)\\] \\[(?P<level>\\w+)\\]'
+            - labels:
+                level:
+            - template:
+                source: domain
+                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\\$1" .filename }}'
+            - labeldrop:
+                - filename
+
+EOF
+fi
 
 echo -e "${GREEN}✓ Grafana Agent configured${NC}"
 

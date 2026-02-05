@@ -1,0 +1,148 @@
+{
+  "title": "Square Candy - Log Viewer",
+  "uid": "sqcdy-log-viewer",
+  "tags": ["squarecandy", "logs"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "server",
+        "type": "query",
+        "query": "label_values(instance)",
+        "datasource": "Loki",
+        "current": {},
+        "refresh": 1,
+        "includeAll": true,
+        "multi": false,
+        "sort": 1
+      },
+      {
+        "name": "domain",
+        "type": "query",
+        "query": "label_values({instance=~\"$server\"}, domain)",
+        "datasource": "Loki",
+        "current": {},
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "sort": 1
+      },
+      {
+        "name": "status",
+        "type": "custom",
+        "query": "2xx,3xx,4xx,5xx",
+        "current": {},
+        "includeAll": true,
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "title": "Access Logs",
+      "type": "logs",
+      "gridPos": {"h": 20, "w": 24, "x": 0, "y": 0},
+      "datasource": "Loki",
+      "targets": [
+        {
+          "expr": "{job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status=~\"${status:regex}\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "title": "Log Volume by Status Code",
+      "type": "timeseries",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 20},
+      "datasource": "Loki",
+      "targets": [
+        {
+          "expr": "sum by (status) (count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"}[1m]))",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 10,
+            "spanNulls": true
+          }
+        }
+      }
+    },
+    {
+      "title": "Top URLs (from logs)",
+      "type": "table",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 20},
+      "datasource": "Loki",
+      "targets": [
+        {
+          "expr": "topk(20, sum by (url) (count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status=~\"${status:regex}\"}[$__range])))",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "url": "URL",
+              "Value": "Requests"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Requests",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Error Logs",
+      "type": "logs",
+      "gridPos": {"h": 15, "w": 24, "x": 0, "y": 30},
+      "datasource": "Loki",
+      "targets": [
+        {
+          "expr": "{job=\"error-logs\",instance=~\"$server\",domain=~\"$domain\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    }
+  ]
+}

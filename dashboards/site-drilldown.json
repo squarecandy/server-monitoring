@@ -4,7 +4,7 @@
   "tags": ["squarecandy", "sites"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 13,
+    "version": 14,
     "refresh": "1m",
     "time": {
       "from": "now-6h",
@@ -202,7 +202,8 @@
                   "value": [
                     {
                       "title": "Open URL",
-                      "url": "https://${__data.fields.domain}${__data.fields.url}"
+                      "url": "https://${__data.fields.domain}${__data.fields.url}",
+                      "targetBlank": true
                     }
                   ]
                 }
@@ -357,7 +358,7 @@
       {
         "title": "Top URLs",
         "type": "table",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 32},
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 24},
         "fieldConfig": {
           "defaults": {
             "decimals": 0
@@ -371,7 +372,8 @@
                   "value": [
                     {
                       "title": "Open URL",
-                      "url": "https://${__data.fields.domain}${__data.fields.url}"
+                      "url": "https://${__data.fields.domain}${__data.fields.url}",
+                      "targetBlank": true
                     }
                   ]
                 }
