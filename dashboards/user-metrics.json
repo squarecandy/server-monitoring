@@ -4,7 +4,7 @@
   "tags": ["squarecandy", "users", "linux"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 12,
+    "version": 14,
     "refresh": "1m",
     "time": {
       "from": "now-6h",
@@ -49,6 +49,9 @@
         "fieldConfig": {
           "defaults": {
             "unit": "percent",
+            "custom": {
+              "spanNulls": true
+            },
             "thresholds": {
               "mode": "absolute",
               "steps": [
@@ -74,6 +77,9 @@
         "fieldConfig": {
           "defaults": {
             "unit": "decgbytes",
+            "custom": {
+              "spanNulls": true
+            },
             "thresholds": {
               "mode": "absolute",
               "steps": [
@@ -98,7 +104,10 @@
         ],
         "fieldConfig": {
           "defaults": {
-            "unit": "short"
+            "unit": "short",
+            "custom": {
+              "spanNulls": true
+            }
           }
         }
       },
@@ -108,28 +117,16 @@
         "gridPos": {"h": 10, "w": 24, "x": 0, "y": 30},
         "targets": [
           {
-            "expr": "sqcdy_user_cpu_percent{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}",
+            "expr": "max_over_time(sqcdy_user_cpu_percent{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}[$__range])",
             "format": "table",
             "instant": true,
             "refId": "A"
           },
           {
-            "expr": "max_over_time(sqcdy_user_cpu_percent{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}[$__range])",
-            "format": "table",
-            "instant": true,
-            "refId": "B"
-          },
-          {
-            "expr": "sqcdy_user_memory_bytes{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"} / 1024 / 1024 / 1024",
-            "format": "table",
-            "instant": true,
-            "refId": "C"
-          },
-          {
             "expr": "max_over_time(sqcdy_user_memory_bytes{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}[$__range]) / 1024 / 1024 / 1024",
             "format": "table",
             "instant": true,
-            "refId": "D"
+            "refId": "B"
           }
         ],
         "transformations": [
@@ -148,16 +145,12 @@
               "indexByName": {
                 "user": 0,
                 "Value #A": 1,
-                "Value #B": 2,
-                "Value #C": 3,
-                "Value #D": 4
+                "Value #B": 2
               },
               "renameByName": {
                 "user": "User",
-                "Value #A": "Current CPU %",
-                "Value #B": "Max CPU %",
-                "Value #C": "Current Memory GB",
-                "Value #D": "Max Memory GB"
+                "Value #A": "CPU %",
+                "Value #B": "Memory GB"
               }
             }
           },
@@ -167,7 +160,7 @@
               "fields": {},
               "sort": [
                 {
-                  "field": "Max CPU %",
+                  "field": "CPU %",
                   "desc": true
                 }
               ]
@@ -178,7 +171,7 @@
           "showHeader": true,
           "sortBy": [
             {
-              "displayName": "Max CPU %",
+              "displayName": "CPU %",
               "desc": true
             }
           ]
@@ -186,19 +179,11 @@
         "fieldConfig": {
           "overrides": [
             {
-              "matcher": {"id": "byName", "options": "Current CPU %"},
+              "matcher": {"id": "byName", "options": "CPU %"},
               "properties": [{"id": "decimals", "value": 2}]
             },
             {
-              "matcher": {"id": "byName", "options": "Max CPU %"},
-              "properties": [{"id": "decimals", "value": 2}]
-            },
-            {
-              "matcher": {"id": "byName", "options": "Current Memory GB"},
-              "properties": [{"id": "decimals", "value": 2}]
-            },
-            {
-              "matcher": {"id": "byName", "options": "Max Memory GB"},
+              "matcher": {"id": "byName", "options": "Memory GB"},
               "properties": [{"id": "decimals", "value": 2}]
             }
           ]
