@@ -57,7 +57,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"} | regexp ` (?P<status>\\\\d{3}) ` | status=~\"$status\"",
+          "expr": "{job=\"access-logs\"} | regexp ` (?P<status>\\\\d{3}) ` | status=~\"$status\"",
           "refId": "A"
         }
       ],
@@ -74,14 +74,14 @@
     {
       "title": "Log Volume by Status Code",
       "type": "timeseries",
-      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0},
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0},
       "datasource": {
         "type": "loki",
         "uid": "grafanacloud-squarecandy-logs"
       },
       "targets": [
         {
-          "expr": "sum by (status) (rate({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"} | regexp ` (?P<status>\\\\d{3}) ` [1m]))",
+          "expr": "sum by (status) (rate({job=\"access-logs\"} | regexp ` (?P<status>\\\\d{3}) ` [1m]))",
           "legendFormat": "{{status}}",
           "refId": "A"
         }
@@ -97,45 +97,6 @@
       }
     },
     {
-      "title": "Top URLs (from logs)",
-      "type": "table",
-      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0},
-      "datasource": {
-        "type": "loki",
-        "uid": "grafanacloud-squarecandy-logs"
-      },
-      "targets": [
-        {
-          "expr": "topk(20, sum by (url) (count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"} | regexp `\\\"(?P<method>\\\\S+) (?P<url>\\\\S+) ` | regexp ` (?P<status>\\\\d{3}) ` | status=~\"$status\" | __error__=\"\" [$__range])))",
-          "refId": "A",
-          "instant": true,
-          "legendFormat": "{{url}}"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "renameByName": {
-              "url": "URL",
-              "Value #A": "Hits"
-            }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "sort": [
-              {
-                "field": "Hits",
-                "desc": true
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
       "title": "Error Logs",
       "type": "logs",
       "gridPos": {"h": 20, "w": 24, "x": 0, "y": 10},
@@ -145,7 +106,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"error-logs\",instance=~\"$server\",domain=~\"$domain\"}",
+          "expr": "{job=\"error-logs\"}",
           "refId": "A"
         }
       ],
