@@ -351,7 +351,7 @@ logs:
                 domain:
             # Extract status code and map to range (2xx, 3xx, 4xx, 5xx)
             - regex:
-                expression: ' (?P<status_code>\\d{3}) '
+                expression: ' (?P<status_code>\d{3}) '
             - template:
                 source: status_range
                 template: '{{ if .status_code }}{{ if hasPrefix .status_code "2" }}2xx{{ else if hasPrefix .status_code "3" }}3xx{{ else if hasPrefix .status_code "4" }}4xx{{ else if hasPrefix .status_code "5" }}5xx{{ else }}other{{ end }}{{ else }}unknown{{ end }}'
