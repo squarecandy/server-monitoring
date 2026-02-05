@@ -345,7 +345,7 @@ logs:
           pipeline_stages:
             # Drop monitoring/bot traffic to reduce noise and costs
             - drop:
-                expression: '(UptimeRobot|neat\.software\.Ping|Googlebot|bingbot|monitoring)'
+                expression: '.*(UptimeRobot|neat\\.software\\.Ping|Googlebot|bingbot|monitoring).*'
             - regex:
                 expression: '^(?P<ip>[\d.]+) - (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+) "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
             - template:

@@ -57,7 +57,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"access-logs\"} | regexp ` (?P<status>\\\\d{3}) ` | status=~\"$status\"",
+          "expr": "{job=\"access-logs\",domain=~\"$domain\"} | regexp ` (?P<status>\\\\d{3}) ` | status=~\"$status\"",
           "refId": "A"
         }
       ],
@@ -81,7 +81,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (status) (rate({job=\"access-logs\"} | regexp ` (?P<status>\\\\d{3}) ` [1m]))",
+          "expr": "sum by (status) (rate({job=\"access-logs\",domain=~\"$domain\"} | regexp ` (?P<status>\\\\d{3}) ` [1m]))",
           "legendFormat": "{{status}}",
           "refId": "A"
         }
@@ -106,7 +106,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"error-logs\"}",
+          "expr": "{job=\"error-logs\",domain=~\"$domain\"}",
           "refId": "A"
         }
       ],
