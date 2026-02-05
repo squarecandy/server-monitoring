@@ -5,7 +5,7 @@ set -e
 # Uploads dashboards to Grafana Cloud via API
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE="$SCRIPT_DIR/.grafana-config"
+CONFIG_FILE="$SCRIPT_DIR/.grafana-config-local"
 DASHBOARDS_DIR="$SCRIPT_DIR/dashboards"
 
 echo "============================================"
@@ -17,9 +17,14 @@ echo ""
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "Error: Config file not found: $CONFIG_FILE"
     echo ""
-    echo "Create a .grafana-config file with:"
+    echo "Create .grafana-config-local from .grafana-config-local.example"
+    echo ""
+    exit 1
+fi
     echo "  GRAFANA_URL=https://YOUR-INSTANCE.grafana.net"
     echo "  GRAFANA_API_TOKEN=YOUR_API_TOKEN"
+    echo ""
+    echo "See .grafana-config-local.example for template"
     echo ""
     exit 1
 fi

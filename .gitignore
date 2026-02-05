@@ -10,6 +10,8 @@ credentials/
 grafana-*.key
 api-keys.txt
 .grafana-config
+.grafana-config-local
+.grafana-config-server
 
 # Python
 __pycache__/

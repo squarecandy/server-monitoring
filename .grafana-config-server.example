@@ -1,0 +1,21 @@
+# Grafana Cloud Configuration - SERVER (for Grafana Agent)
+# Used by install.sh to configure /etc/grafana-agent.yaml on servers
+# Copy this file to the server before running install.sh
+
+# Prometheus Push URL (e.g., https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push)
+PROMETHEUS_URL=https://prometheus-XXXXX.grafana.net/api/prom/push
+
+# Prometheus Instance ID (username) - find in Grafana Cloud → Prometheus details
+PROMETHEUS_INSTANCE_ID=123456
+
+# Prometheus API Token (glc_...)
+PROMETHEUS_API_TOKEN=glc_YOUR_PROMETHEUS_TOKEN_HERE
+
+# Loki Push URL (e.g., https://logs-prod-006.grafana.net/loki/api/v1/push)
+LOKI_URL=https://logs-XXXXX.grafana.net/loki/api/v1/push
+
+# Loki Instance ID (username) - find in Grafana Cloud → Loki details
+LOKI_INSTANCE_ID=654321
+
+# Loki API Token (glc_...)
+LOKI_API_TOKEN=glc_YOUR_LOKI_TOKEN_HERE

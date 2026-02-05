@@ -1,0 +1,8 @@
+# Grafana Cloud Configuration - LOCAL (for dashboard deployment)
+# Used by deploy-dashboards.sh to upload dashboards via Grafana API
+
+# Grafana instance URL
+GRAFANA_URL=https://YOUR-INSTANCE.grafana.net
+
+# API token with Editor role - create in: Settings → API Keys → New API Key
+GRAFANA_API_TOKEN=glsa_YOUR_API_TOKEN_HERE

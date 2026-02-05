@@ -33,18 +33,37 @@ LOKI_API_TOKEN="${LOKI_API_TOKEN:-}"
 INSTALL_DIR="/opt/squarecandy-monitoring"
 EXPORTER_USER="sqcdy-monitor"
 
-# Check if existing config exists and extract credentials
-if [ -f "/etc/grafana-agent.yaml" ] && [ -z "$PROMETHEUS_URL" ]; then
-    echo -e "${BLUE}Found existing Grafana Agent configuration${NC}"
-    echo "Using credentials from /etc/grafana-agent.yaml"
-    PROMETHEUS_URL=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "url:" | head -1 | sed 's/.*url: //' | tr -d ' ')
-    PROMETHEUS_INSTANCE_ID=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "username:" | head -1 | sed 's/.*username: //' | tr -d ' ')
-    PROMETHEUS_API_TOKEN=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "password:" | head -1 | sed 's/.*password: //' | tr -d ' ')
-    echo -e "${GREEN}✓ Loaded existing Prometheus credentials${NC}"
+# Try to load config from .grafana-config-server first
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SERVER_CONFIG="$SCRIPT_DIR/.grafana-config-server"
+
+if [ -f "$SERVER_CONFIG" ]; then
+    echo -e "${BLUE}Loading configuration from .grafana-config-server${NC}"
+    source "$SERVER_CONFIG"
+    echo -e "${GREEN}✓ Configuration loaded${NC}"
     echo ""
 fi
 
-# Prompt for credentials if not set (backward compatibility)
+# If still empty, try extracting from existing grafana-agent.yaml
+if [ -f "/etc/grafana-agent.yaml" ] && [ -z "$PROMETHEUS_URL" ]; then
+    echo -e "${BLUE}Found existing Grafana Agent configuration${NC}"
+    echo "Extracting credentials from /etc/grafana-agent.yaml"
+    PROMETHEUS_URL=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "url:" | head -1 | sed 's/.*url: //' | tr -d ' ')
+    PROMETHEUS_INSTANCE_ID=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "username:" | head -1 | sed 's/.*username: //' | tr -d ' ')
+    PROMETHEUS_API_TOKEN=$(grep -A 10 "remote_write:" /etc/grafana-agent.yaml | grep "password:" | head -1 | sed 's/.*password: //' | tr -d ' ')
+    
+    # Try to extract Loki config if it exists
+    if grep -q "^logs:" /etc/grafana-agent.yaml; then
+        LOKI_URL=$(grep -A 10 "clients:" /etc/grafana-agent.yaml | grep "url:" | head -1 | sed 's/.*url: //' | tr -d ' ')
+        LOKI_INSTANCE_ID=$(grep -A 10 "clients:" /etc/grafana-agent.yaml | grep "username:" | head -1 | sed 's/.*username: //' | tr -d ' ')
+        LOKI_API_TOKEN=$(grep -A 10 "clients:" /etc/grafana-agent.yaml | grep "password:" | head -1 | sed 's/.*password: //' | tr -d ' ')
+    fi
+    
+    echo -e "${GREEN}✓ Loaded existing credentials${NC}"
+    echo ""
+fi
+
+# Prompt for credentials if still not set
 if [ -z "$PROMETHEUS_URL" ]; then
     echo -e "${BLUE}Grafana Cloud Configuration${NC}"
     echo "Please enter your Grafana Cloud details"
