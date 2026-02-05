@@ -344,7 +344,7 @@ logs:
                 __path__: /var/www/vhosts/*/logs/*access*log
           relabel_configs:
             - source_labels: [filename]
-              regex: '/var/www/vhosts/([^/]+)/.*'
+              regex: '^/var/www/vhosts/([^/]+)/.*$'
               target_label: domain
               replacement: $1
           pipeline_stages:
@@ -363,7 +363,7 @@ logs:
                 __path__: /var/www/vhosts/*/logs/*error*log
           relabel_configs:
             - source_labels: [filename]
-              regex: '/var/www/vhosts/([^/]+)/.*'
+              regex: '^/var/www/vhosts/([^/]+)/.*$'
               target_label: domain
               replacement: $1
           pipeline_stages:
