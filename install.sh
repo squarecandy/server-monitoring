@@ -264,7 +264,7 @@ logs:
         filename: /tmp/positions.yaml
       scrape_configs:
         # Plesk access logs
-        - job_name: plesk-access
+        - job_name: access-logs
           static_configs:
             - targets:
                 - localhost
@@ -288,7 +288,7 @@ logs:
                 - filename
         
         # Plesk error logs
-        - job_name: plesk-error
+        - job_name: error-logs
           static_configs:
             - targets:
                 - localhost
@@ -312,8 +312,28 @@ fi
 
 echo -e "${GREEN}✓ Grafana Agent configured${NC}"
 
-# Create systemd services for exporters
-echo "Creating systemd services..."
+# Set up log access permissions for Loki (if enabled)
+if [ "$LOKI_ENABLED" = true ]; then
+    echo ""
+    echo "Configuring log file access for grafana-agent..."
+    
+    # Install ACL package if not present
+    if ! command -v setfacl &> /dev/null; then
+        if command -v yum &> /dev/null; then
+            yum install -y acl -q
+        elif command -v apt-get &> /dev/null; then
+            apt-get install -y acl -qq
+        fi
+    fi
+    
+    # Grant grafana-agent read access to Plesk log directories
+    setfacl -R -m u:grafana-agent:rX /var/www/vhosts/*/logs/ 2>/dev/null
+    setfacl -R -m d:u:grafana-agent:rX /var/www/vhosts/*/logs/ 2>/dev/null
+    
+    echo -e "${GREEN}✓ Log access configured for grafana-agent user${NC}"
+fi
+
+echo ""
 
 # Site metrics service
 cat > /etc/systemd/system/sqcdy-site-metrics.service <<EOF

@@ -21,13 +21,6 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo ""
     exit 1
 fi
-    echo "  GRAFANA_URL=https://YOUR-INSTANCE.grafana.net"
-    echo "  GRAFANA_API_TOKEN=YOUR_API_TOKEN"
-    echo ""
-    echo "See .grafana-config-local.example for template"
-    echo ""
-    exit 1
-fi
 
 # Load config
 source "$CONFIG_FILE"
