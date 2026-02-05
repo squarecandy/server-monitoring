@@ -4,7 +4,7 @@
   "tags": ["squarecandy", "users", "linux"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 9,
+    "version": 12,
     "refresh": "1m",
     "time": {
       "from": "now-6h",
@@ -13,9 +13,19 @@
     "templating": {
       "list": [
         {
+          "name": "server",
+          "type": "query",
+          "query": "label_values(sqcdy_user_cpu_percent, instance)",
+          "current": {},
+          "refresh": 1,
+          "includeAll": true,
+          "multi": false,
+          "sort": 1
+        },
+        {
           "name": "user",
           "type": "query",
-          "query": "label_values(sqcdy_user_cpu_percent{user!~\"root|apache|psaadm|mysql\"}, user)",
+          "query": "label_values(sqcdy_user_cpu_percent{instance=~\"$server\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}, user)",
           "current": {},
           "refresh": 1,
           "includeAll": true,
@@ -31,7 +41,7 @@
         "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0},
         "targets": [
           {
-            "expr": "sqcdy_user_cpu_percent{user=~\"$user\", user!~\"root|apache|psaadm|mysql\"}",
+            "expr": "sqcdy_user_cpu_percent{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}",
             "legendFormat": "{{user}}",
             "refId": "A"
           }
@@ -56,7 +66,7 @@
         "gridPos": {"h": 10, "w": 24, "x": 0, "y": 10},
         "targets": [
           {
-            "expr": "(sqcdy_user_memory_bytes{user=~\"$user\"} / 1024 / 1024 / 1024)",
+            "expr": "(sqcdy_user_memory_bytes{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"} / 1024 / 1024 / 1024)",
             "legendFormat": "{{user}}",
             "refId": "A"
           }
@@ -81,7 +91,7 @@
         "gridPos": {"h": 10, "w": 24, "x": 0, "y": 20},
         "targets": [
           {
-            "expr": "sqcdy_user_process_count{user=~\"$user\"}",
+            "expr": "sqcdy_user_process_count{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}",
             "legendFormat": "{{user}}",
             "refId": "A"
           }
@@ -98,25 +108,25 @@
         "gridPos": {"h": 10, "w": 24, "x": 0, "y": 30},
         "targets": [
           {
-            "expr": "sqcdy_user_cpu_percent{user=~\"$user\", user!~\"root|apache|psaadm|mysql\"}",
+            "expr": "sqcdy_user_cpu_percent{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}",
             "format": "table",
             "instant": true,
             "refId": "A"
           },
           {
-            "expr": "max_over_time(sqcdy_user_cpu_percent{user=~\"$user\", user!~\"root|apache|psaadm|mysql\"}[$__range])",
+            "expr": "max_over_time(sqcdy_user_cpu_percent{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}[$__range])",
             "format": "table",
             "instant": true,
             "refId": "B"
           },
           {
-            "expr": "sqcdy_user_memory_bytes{user=~\"$user\", user!~\"root|apache|psaadm|mysql\"} / 1024 / 1024 / 1024",
+            "expr": "sqcdy_user_memory_bytes{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"} / 1024 / 1024 / 1024",
             "format": "table",
             "instant": true,
             "refId": "C"
           },
           {
-            "expr": "max_over_time(sqcdy_user_memory_bytes{user=~\"$user\", user!~\"root|apache|psaadm|mysql\"}[$__range]) / 1024 / 1024 / 1024",
+            "expr": "max_over_time(sqcdy_user_memory_bytes{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}[$__range]) / 1024 / 1024 / 1024",
             "format": "table",
             "instant": true,
             "refId": "D"
