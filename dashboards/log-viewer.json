@@ -35,6 +35,10 @@
       {
         "name": "status",
         "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "grafanacloud-squarecandy-logs"
+        },
         "query": "label_values({job=\"access-logs\"}, status_range)",
         "current": {
           "text": "All",
@@ -49,30 +53,6 @@
     ]
   },
   "panels": [
-    {
-      "title": "Access Logs",
-      "type": "logs",
-      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 30},
-      "datasource": {
-        "type": "loki",
-        "uid": "grafanacloud-squarecandy-logs"
-      },
-      "targets": [
-        {
-          "expr": "{job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=~\"$status\"}",
-          "refId": "A"
-        }
-      ],
-      "options": {
-        "showTime": true,
-        "showLabels": true,
-        "showCommonLabels": false,
-        "wrapLogMessage": true,
-        "prettifyLogMessage": false,
-        "enableLogDetails": true,
-        "sortOrder": "Descending"
-      }
-    },
     {
       "title": "Log Volume by Status Code",
       "type": "timeseries",
@@ -99,16 +79,16 @@
       }
     },
     {
-      "title": "Error Logs",
+      "title": "All Logs (Access + Error)",
       "type": "logs",
-      "gridPos": {"h": 20, "w": 24, "x": 0, "y": 10},
+      "gridPos": {"h": 34, "w": 24, "x": 0, "y": 10},
       "datasource": {
         "type": "loki",
         "uid": "grafanacloud-squarecandy-logs"
       },
       "targets": [
         {
-          "expr": "{job=\"error-logs\",instance=~\"$server\",domain=~\"$domain\"}",
+          "expr": "{job=~\"access-logs|error-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=~\"$status\"}",
           "refId": "A"
         }
       ],
@@ -119,7 +99,8 @@
         "wrapLogMessage": true,
         "prettifyLogMessage": false,
         "enableLogDetails": true,
-        "sortOrder": "Descending"
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
       }
     }
   ]
