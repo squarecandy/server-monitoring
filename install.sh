@@ -71,8 +71,8 @@ echo ""
 # Detect platform
 echo "Detecting platform..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -f "$SCRIPT_DIR/../exporters/platform-detect.sh" ]; then
-    PLATFORM_DETECT="$SCRIPT_DIR/../exporters/platform-detect.sh"
+if [ -f "$SCRIPT_DIR/exporters/platform-detect.sh" ]; then
+    PLATFORM_DETECT="$SCRIPT_DIR/exporters/platform-detect.sh"
 elif [ -f "$INSTALL_DIR/exporters/platform-detect.sh" ]; then
     PLATFORM_DETECT="$INSTALL_DIR/exporters/platform-detect.sh"
 else
@@ -112,8 +112,8 @@ echo -e "${GREEN}✓ Created installation directory: $INSTALL_DIR${NC}"
 
 # Copy exporters
 echo "Installing exporters..."
-if [ -d "$SCRIPT_DIR/../exporters" ]; then
-    cp -r "$SCRIPT_DIR/../exporters"/* "$INSTALL_DIR/exporters/"
+if [ -d "$SCRIPT_DIR/exporters" ]; then
+    cp -r "$SCRIPT_DIR/exporters"/* "$INSTALL_DIR/exporters/"
     chmod +x "$INSTALL_DIR/exporters"/*.{sh,py} 2>/dev/null || true
     echo -e "${GREEN}✓ Exporters installed${NC}"
 else
