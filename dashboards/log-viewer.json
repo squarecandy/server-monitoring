@@ -13,24 +13,24 @@
   "templating": {
     "list": [
       {
-        "name": "server",
-        "type": "query",
-        "query": "label_values(sqcdy_site_disk_bytes, instance)",
-        "current": {},
-        "refresh": 1,
-        "includeAll": true,
-        "multi": false,
-        "sort": 1
-      },
-      {
         "name": "domain",
         "type": "query",
-        "query": "label_values(sqcdy_site_disk_bytes{instance=~\"$server\"}, domain)",
+        "datasource": {
+          "type": "loki",
+          "uid": "grafanacloud-squarecandy-logs"
+        },
+        "query": {
+          "label": "domain",
+          "refId": "LokiVariableQueryEditor-VariableQuery",
+          "stream": "{job=\"access-logs\"}",
+          "type": 1
+        },
         "current": {},
         "refresh": 2,
         "includeAll": true,
         "multi": true,
-        "sort": 1
+        "sort": 1,
+        "allValue": ".*"
       },
       {
         "name": "status",
