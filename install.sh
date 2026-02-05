@@ -351,12 +351,35 @@ logs:
                 domain:
             # Extract status code and map to range (2xx, 3xx, 4xx, 5xx)
             - regex:
-                expression: ' (?P<status_code>\d{3}) '
-            - template:
-                source: status_range
-                template: '{{ if .status_code }}{{ if hasPrefix .status_code "2" }}2xx{{ else if hasPrefix .status_code "3" }}3xx{{ else if hasPrefix .status_code "4" }}4xx{{ else if hasPrefix .status_code "5" }}5xx{{ else }}other{{ end }}{{ else }}unknown{{ end }}'
-            - labels:
-                status_range:
+                expression: '"[A-Z]+ [^"]+ HTTP/[^"]+" (?P<status>\d{3}) '
+            - match:
+                selector: '{job="access-logs"}'
+                stages:
+                  - regex:
+                      expression: '"[A-Z]+ [^"]+ HTTP/[^"]+" (2\d{2}) '
+                  - static_labels:
+                      status_range: 2xx
+            - match:
+                selector: '{job="access-logs"}'
+                stages:
+                  - regex:
+                      expression: '"[A-Z]+ [^"]+ HTTP/[^"]+" (3\d{2}) '
+                  - static_labels:
+                      status_range: 3xx
+            - match:
+                selector: '{job="access-logs"}'
+                stages:
+                  - regex:
+                      expression: '"[A-Z]+ [^"]+ HTTP/[^"]+" (4\d{2}) '
+                  - static_labels:
+                      status_range: 4xx
+            - match:
+                selector: '{job="access-logs"}'
+                stages:
+                  - regex:
+                      expression: '"[A-Z]+ [^"]+ HTTP/[^"]+" (5\d{2}) '
+                  - static_labels:
+                      status_range: 5xx
             # Drop monitoring/bot traffic to reduce noise and costs
             - drop:
                 expression: '.*(UptimeRobot|neat\\.software\\.Ping|Googlebot|bingbot|monitoring).*'
