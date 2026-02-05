@@ -251,7 +251,9 @@ EOF
 
 # Add Loki configuration if enabled
 if [ "$LOKI_ENABLED" = true ]; then
-cat >> /etc/grafana-agent.yaml <<EOF
+# Add Loki configuration if enabled
+if [ "$LOKI_ENABLED" = true ]; then
+cat >> /etc/grafana-agent.yaml <<LOKIEOF
 logs:
   configs:
     - name: squarecandy
@@ -274,7 +276,7 @@ logs:
                 __path__: /var/www/vhosts/*/logs/*access*log
           pipeline_stages:
             - regex:
-                expression: '^(?P<ip>[\\d.]+) - (?P<user>\\S+) \\[(?P<time>[^\\]]+)\\] "(?P<method>\\S+) (?P<url>\\S+) \\S+" (?P<status>\\d+) (?P<size>\\d+) "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
+                expression: '^(?P<ip>[\\\\d.]+) - (?P<user>\\\\S+) \\\\[(?P<time>[^\\\\]]+)\\\\] "(?P<method>\\\\S+) (?P<url>\\\\S+) \\\\S+" (?P<status>\\\\d+) (?P<size>\\\\d+) "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
             - labels:
                 ip:
                 method:
@@ -298,16 +300,16 @@ logs:
                 __path__: /var/www/vhosts/*/logs/*error*log
           pipeline_stages:
             - regex:
-                expression: '^\\[(?P<time>[^\\]]+)\\] \\[(?P<level>\\w+)\\]'
+                expression: '^\\\\[(?P<time>[^\\\\]]+)\\\\] \\\\[(?P<level>\\\\w+)\\\\]'
             - labels:
                 level:
             - template:
                 source: domain
-                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\\$1" .filename }}'
+                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .filename }}'
             - labeldrop:
                 - filename
 
-EOF
+LOKIEOF
 fi
 
 echo -e "${GREEN}✓ Grafana Agent configured${NC}"
