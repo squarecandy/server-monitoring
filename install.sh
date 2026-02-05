@@ -172,6 +172,31 @@ eval "$(bash "$PLATFORM_DETECT" --env)"
 
 echo ""
 
+# Detect best Python version
+echo "Detecting Python version..."
+if [ -x /opt/plesk/python/3/bin/python3 ]; then
+    PYTHON_BIN="/opt/plesk/python/3/bin/python3"
+    PYTHON_VERSION=$($PYTHON_BIN --version 2>&1 | grep -oP '\d+\.\d+')
+    echo -e "${GREEN}✓ Using Plesk Python $PYTHON_VERSION${NC}"
+elif command -v python3.10 &> /dev/null; then
+    PYTHON_BIN="python3.10"
+    PYTHON_VERSION=$(python3.10 --version 2>&1 | grep -oP '\d+\.\d+')
+    echo -e "${GREEN}✓ Using Python $PYTHON_VERSION${NC}"
+elif command -v python3.9 &> /dev/null; then
+    PYTHON_BIN="python3.9"
+    PYTHON_VERSION=$(python3.9 --version 2>&1 | grep -oP '\d+\.\d+')
+    echo -e "${GREEN}✓ Using Python $PYTHON_VERSION${NC}"
+elif command -v python3 &> /dev/null; then
+    PYTHON_BIN="python3"
+    PYTHON_VERSION=$(python3 --version 2>&1 | grep -oP '\d+\.\d+')
+    echo -e "${YELLOW}⚠ Using system Python $PYTHON_VERSION${NC}"
+else
+    echo -e "${RED}✗ Python 3 not found${NC}"
+    exit 1
+fi
+
+echo ""
+
 # Install dependencies
 echo "Installing dependencies..."
 if command -v apt-get &> /dev/null; then
@@ -392,7 +417,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/bin/python3 $INSTALL_DIR/exporters/site-metrics.py --port 9101
+ExecStart=$PYTHON_BIN $INSTALL_DIR/exporters/site-metrics.py --port 9101
 Restart=always
 RestartSec=10
 
@@ -426,7 +451,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/bin/python3 $INSTALL_DIR/exporters/log-analyzer.py --port 9103 --window 15
+ExecStart=$PYTHON_BIN $INSTALL_DIR/exporters/log-analyzer.py --port 9103 --window 15
 Restart=always
 RestartSec=10
 
