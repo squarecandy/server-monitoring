@@ -346,6 +346,7 @@ logs:
             - source_labels: [__path__]
               regex: '/var/www/vhosts/([^/]+)/.*'
               target_label: domain
+              replacement: '$1'
           pipeline_stages:
             # Drop monitoring/bot traffic to reduce noise and costs
             - drop:
@@ -360,15 +361,16 @@ logs:
                 job: error-logs
                 instance: $(hostname)
                 __path__: /var/www/vhosts/*/logs/*error*log
+          relabel_configs:
+            - source_labels: [__path__]
+              regex: '/var/www/vhosts/([^/]+)/.*'
+              target_label: domain
+              replacement: '$1'
           pipeline_stages:
             - regex:
                 expression: '^\[(?P<time>[^\]]+)\] \[(?P<level>\w+)\]'
-            - template:
-                source: domain
-                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .__path__ }}'
             - labels:
                 level:
-                domain:
 
 LOKIEOF
 fi
