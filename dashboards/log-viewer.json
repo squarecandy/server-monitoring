@@ -34,15 +34,17 @@
       },
       {
         "name": "status",
-        "type": "custom",
-        "query": "200,201,204,301,302,304,400,401,403,404,500,502,503",
+        "type": "query",
+        "query": "label_values({job=\"access-logs\"}, status_range)",
         "current": {
           "text": "All",
           "value": "$__all"
         },
+        "refresh": 1,
         "includeAll": true,
         "multi": true,
-        "allValue": ".*"
+        "allValue": ".*",
+        "sort": 1
       }
     ]
   },
@@ -57,7 +59,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"access-logs\",domain=~\"$domain\"} | regexp ` (?P<status>\\\\d{3}) ` | status=~\"$status\"",
+          "expr": "{job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=~\"$status\"}",
           "refId": "A"
         }
       ],
@@ -81,8 +83,8 @@
       },
       "targets": [
         {
-          "expr": "sum by (status) (rate({job=\"access-logs\",domain=~\"$domain\"} | regexp ` (?P<status>\\\\d{3}) ` [1m]))",
-          "legendFormat": "{{status}}",
+          "expr": "sum by (status_range) (rate({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=~\"$status\"} [1m]))",
+          "legendFormat": "{{status_range}}",
           "refId": "A"
         }
       ],
@@ -106,7 +108,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"error-logs\",domain=~\"$domain\"}",
+          "expr": "{job=\"error-logs\",instance=~\"$server\",domain=~\"$domain\"}",
           "refId": "A"
         }
       ],
