@@ -342,12 +342,13 @@ logs:
                 job: access-logs
                 instance: $(hostname)
                 __path__: /var/www/vhosts/*/logs/*access*log
-          relabel_configs:
-            - source_labels: [filename]
-              regex: '^/var/www/vhosts/([^/]+)/.*$'
-              target_label: domain
-              replacement: $1
           pipeline_stages:
+            # Extract domain from filename
+            - regex:
+                source: filename
+                expression: '^/var/www/vhosts/(?P<domain>[^/]+)/.*$'
+            - labels:
+                domain:
             # Drop monitoring/bot traffic to reduce noise and costs
             - drop:
                 expression: '.*(UptimeRobot|neat\\.software\\.Ping|Googlebot|bingbot|monitoring).*'
@@ -361,12 +362,13 @@ logs:
                 job: error-logs
                 instance: $(hostname)
                 __path__: /var/www/vhosts/*/logs/*error*log
-          relabel_configs:
-            - source_labels: [filename]
-              regex: '^/var/www/vhosts/([^/]+)/.*$'
-              target_label: domain
-              replacement: $1
           pipeline_stages:
+            # Extract domain from filename
+            - regex:
+                source: filename
+                expression: '^/var/www/vhosts/(?P<domain>[^/]+)/.*$'
+            - labels:
+                domain:
             - regex:
                 expression: '^\[(?P<time>[^\]]+)\] \[(?P<level>\w+)\]'
             - labels:
