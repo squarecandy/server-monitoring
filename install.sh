@@ -346,11 +346,7 @@ logs:
             - regex:
                 expression: '^(?P<ip>[\d.]+) - (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+) "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
             - labels:
-                ip:
-                method:
-                url:
                 status:
-                user_agent:
             - template:
                 source: domain
                 template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .filename }}'

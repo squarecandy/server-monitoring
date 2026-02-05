@@ -15,11 +15,7 @@
       {
         "name": "server",
         "type": "query",
-        "query": "label_values(instance)",
-        "datasource": {
-          "type": "loki",
-          "uid": "grafanacloud-squarecandy-logs"
-        },
+        "query": "label_values(sqcdy_site_disk_bytes, instance)",
         "current": {},
         "refresh": 1,
         "includeAll": true,
@@ -29,13 +25,9 @@
       {
         "name": "domain",
         "type": "query",
-        "query": "label_values({instance=~\"$server\"}, domain)",
-        "datasource": {
-          "type": "loki",
-          "uid": "grafanacloud-squarecandy-logs"
-        },
+        "query": "label_values(sqcdy_site_disk_bytes{instance=~\"$server\"}, domain)",
         "current": {},
-        "refresh": 1,
+        "refresh": 2,
         "includeAll": true,
         "multi": true,
         "sort": 1
@@ -43,10 +35,14 @@
       {
         "name": "status",
         "type": "custom",
-        "query": "2xx,3xx,4xx,5xx",
-        "current": {},
+        "query": "200,201,204,301,302,304,400,401,403,404,500,502,503",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
         "includeAll": true,
-        "multi": true
+        "multi": true,
+        "allValue": ".*"
       }
     ]
   },
@@ -54,14 +50,14 @@
     {
       "title": "Access Logs",
       "type": "logs",
-      "gridPos": {"h": 20, "w": 24, "x": 0, "y": 0},
+      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 30},
       "datasource": {
         "type": "loki",
         "uid": "grafanacloud-squarecandy-logs"
       },
       "targets": [
         {
-          "expr": "{job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status=~\"${status:regex}\"}",
+          "expr": "{job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status=~\"$status\"}",
           "refId": "A"
         }
       ],
@@ -78,14 +74,14 @@
     {
       "title": "Log Volume by Status Code",
       "type": "timeseries",
-      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 20},
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0},
       "datasource": {
         "type": "loki",
         "uid": "grafanacloud-squarecandy-logs"
       },
       "targets": [
         {
-          "expr": "sum by (status) (count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"}[1m]))",
+          "expr": "sum by (status) (rate({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"}[1m]))",
           "legendFormat": "{{status}}",
           "refId": "A"
         }
@@ -103,16 +99,17 @@
     {
       "title": "Top URLs (from logs)",
       "type": "table",
-      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 20},
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0},
       "datasource": {
         "type": "loki",
         "uid": "grafanacloud-squarecandy-logs"
       },
       "targets": [
         {
-          "expr": "topk(20, sum by (url) (count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status=~\"${status:regex}\"}[$__range])))",
+          "expr": "topk(20, sum by (url) (count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status=~\"$status\"} | regexp `\\\"(?P<method>\\\\S+) (?P<url>\\\\S+) ` | __error__=\"\" [$__range])))",
           "refId": "A",
-          "instant": true
+          "instant": true,
+          "legendFormat": "{{url}}"
         }
       ],
       "transformations": [
@@ -121,7 +118,7 @@
           "options": {
             "renameByName": {
               "url": "URL",
-              "Value": "Requests"
+              "Value #A": "Hits"
             }
           }
         },
@@ -130,7 +127,7 @@
           "options": {
             "sort": [
               {
-                "field": "Requests",
+                "field": "Hits",
                 "desc": true
               }
             ]
@@ -141,7 +138,7 @@
     {
       "title": "Error Logs",
       "type": "logs",
-      "gridPos": {"h": 15, "w": 24, "x": 0, "y": 30},
+      "gridPos": {"h": 20, "w": 24, "x": 0, "y": 10},
       "datasource": {
         "type": "loki",
         "uid": "grafanacloud-squarecandy-logs"
