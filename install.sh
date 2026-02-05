@@ -297,7 +297,7 @@ logs:
                 __path__: /var/www/vhosts/*/logs/*access*log
           pipeline_stages:
             - regex:
-                expression: '^(?P<ip>[\\\\d.]+) - (?P<user>\\\\S+) \\\\[(?P<time>[^\\\\]]+)\\\\] "(?P<method>\\\\S+) (?P<url>\\\\S+) \\\\S+" (?P<status>\\\\d+) (?P<size>\\\\d+) "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
+                expression: '^(?P<ip>[\d.]+) - (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+) "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
             - labels:
                 ip:
                 method:
@@ -321,7 +321,7 @@ logs:
                 __path__: /var/www/vhosts/*/logs/*error*log
           pipeline_stages:
             - regex:
-                expression: '^\\\\[(?P<time>[^\\\\]]+)\\\\] \\\\[(?P<level>\\\\w+)\\\\]'
+                expression: '^\[(?P<time>[^\]]+)\] \[(?P<level>\w+)\]'
             - labels:
                 level:
             - template:
