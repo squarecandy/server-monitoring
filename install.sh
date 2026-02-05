@@ -56,10 +56,32 @@ LOKI_API_TOKEN="${LOKI_API_TOKEN:-}"
 INSTALL_DIR="/opt/squarecandy-monitoring"
 EXPORTER_USER="sqcdy-monitor"
 
+# Create installation directory early
+if [ "$DRY_RUN" = false ]; then
+    mkdir -p "$INSTALL_DIR"
+fi
+
 # Try to load config from .grafana-config-server first
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVER_CONFIG="$SCRIPT_DIR/.grafana-config-server"
+LOCAL_CONFIG="$SCRIPT_DIR/.grafana-config-server"
+SERVER_CONFIG="$INSTALL_DIR/.grafana-config-server"
 
+# Copy local config to server location with secure permissions
+if [ -f "$LOCAL_CONFIG" ]; then
+    echo -e "${BLUE}Copying .grafana-config-server to $INSTALL_DIR${NC}"
+    if [ "$DRY_RUN" = false ]; then
+        cp "$LOCAL_CONFIG" "$SERVER_CONFIG"
+        chmod 600 "$SERVER_CONFIG"
+        chown root:root "$SERVER_CONFIG"
+    else
+        echo "  [DRY-RUN] Would copy: $LOCAL_CONFIG -> $SERVER_CONFIG"
+        echo "  [DRY-RUN] Would set permissions: 600 root:root"
+    fi
+    echo -e "${GREEN}✓ Config file secured${NC}"
+    echo ""
+fi
+
+# Load configuration from server location
 if [ -f "$SERVER_CONFIG" ]; then
     echo -e "${BLUE}Loading configuration from .grafana-config-server${NC}"
     source "$SERVER_CONFIG"
