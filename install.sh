@@ -350,11 +350,9 @@ logs:
                 expression: '^(?P<ip>[\d.]+) - (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+) "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
             - template:
                 source: domain
-                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .filename }}'
+                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .__path__ }}'
             - labels:
                 domain:
-            - labeldrop:
-                - filename
         
         # Plesk error logs
         - job_name: error-logs
@@ -370,12 +368,10 @@ logs:
                 expression: '^\[(?P<time>[^\]]+)\] \[(?P<level>\w+)\]'
             - template:
                 source: domain
-                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .filename }}'
+                template: '{{ regexReplaceAll "^/var/www/vhosts/([^/]+)/.*" "\$1" .__path__ }}'
             - labels:
                 level:
                 domain:
-            - labeldrop:
-                - filename
 
 LOKIEOF
 fi
