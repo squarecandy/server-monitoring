@@ -1,10 +1,10 @@
 {
-  "title": "Square Candy - Site Drill Down",
+  "title": "Square Candy - Site Metrics",
   "uid": "sqcdy-site-drilldown",
-  "tags": ["squarecandy", "sites", "drilldown"],
+  "tags": ["squarecandy", "sites"],
     "timezone": "browser",
     "schemaVersion": 38,
-    "version": 4,
+    "version": 11,
     "refresh": "1m",
     "time": {
       "from": "now-6h",
@@ -13,13 +13,23 @@
     "templating": {
       "list": [
         {
-          "name": "domain",
+          "name": "server",
           "type": "query",
-          "query": "label_values(sqcdy_site_disk_bytes, domain)",
+          "query": "label_values(sqcdy_site_disk_bytes, instance)",
           "current": {},
           "refresh": 1,
-          "includeAll": false,
+          "includeAll": true,
           "multi": false,
+          "sort": 1
+        },
+        {
+          "name": "domain",
+          "type": "query",
+          "query": "label_values(sqcdy_site_disk_bytes{instance=~\"$server\"}, domain)",
+          "current": {},
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true,
           "sort": 1
         }
       ]
@@ -28,10 +38,10 @@
       {
         "title": "Disk Utilization (GB)",
         "type": "timeseries",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0},
         "targets": [
           {
-            "expr": "sqcdy_site_disk_bytes{domain=\"$domain\"} / 1024 / 1024 / 1024",
+            "expr": "sqcdy_site_disk_bytes{instance=~\"$server\", domain=~\"$domain\"} / 1024 / 1024 / 1024",
             "legendFormat": "{{domain}}",
             "refId": "A"
           }
@@ -39,6 +49,7 @@
         "fieldConfig": {
           "defaults": {
             "unit": "decgbytes",
+            "min": 0,
             "thresholds": {
               "mode": "absolute",
               "steps": [
@@ -53,11 +64,11 @@
       {
         "title": "Traffic: Requests per Minute",
         "type": "timeseries",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0},
         "targets": [
           {
-            "expr": "sqcdy_site_requests_per_minute{domain=\"$domain\"}",
-            "legendFormat": "Requests/min",
+            "expr": "rate(sqcdy_site_requests_per_minute{instance=~\"$server\", domain=~\"$domain\"}[5m])",
+            "legendFormat": "{{domain}}",
             "refId": "A"
           }
         ],
@@ -70,11 +81,11 @@
       {
         "title": "Traffic: MB per Minute",
         "type": "timeseries",
-        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
         "targets": [
           {
-            "expr": "sqcdy_site_bytes_per_minute{domain=\"$domain\"} / 1024 / 1024",
-            "legendFormat": "MB/min",
+            "expr": "rate(sqcdy_site_bytes_per_minute{instance=~\"$server\", domain=~\"$domain\"}[5m]) / 1024 / 1024",
+            "legendFormat": "{{domain}}",
             "refId": "A"
           }
         ],
@@ -87,23 +98,49 @@
       {
         "title": "Top IPs",
         "type": "table",
-        "gridPos": {"h": 10, "w": 8, "x": 0, "y": 16},
+        "gridPos": {"h": 10, "w": 8, "x": 0, "y": 24},
         "targets": [
           {
-            "expr": "topk(20, sqcdy_site_top_ip_requests{domain=\"$domain\"})",
+            "expr": "topk(20, sum by (ip) (sqcdy_site_top_ip_requests{instance=~\"$server\", domain=~\"$domain\"}))",
             "format": "table",
             "refId": "A"
           }
         ],
         "transformations": [
           {
+            "id": "groupBy",
+            "options": {
+              "fields": {
+                "Value": {
+                  "aggregations": ["lastNotNull"],
+                  "operation": "aggregate"
+                },
+                "ip": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                }
+              }
+            }
+          },
+          {
             "id": "organize",
             "options": {
-              "excludeByName": {"Time": true, "domain": true},
+              "excludeByName": {"Time": true, "__name__": true, "instance": true, "job": true},
               "renameByName": {
                 "ip": "IP Address",
-                "Value": "Requests"
+                "Value (lastNotNull)": "Requests"
               }
+            }
+          },
+          {
+            "id": "sortBy",
+            "options": {
+              "sort": [
+                {
+                  "field": "Requests",
+                  "desc": true
+                }
+              ]
             }
           }
         ]
@@ -111,23 +148,49 @@
       {
         "title": "Top User Agents",
         "type": "table",
-        "gridPos": {"h": 10, "w": 8, "x": 8, "y": 16},
+        "gridPos": {"h": 10, "w": 8, "x": 8, "y": 24},
         "targets": [
           {
-            "expr": "topk(20, sqcdy_site_top_user_agent_requests{domain=\"$domain\"})",
+            "expr": "topk(20, sum by (user_agent) (sqcdy_site_top_user_agent_requests{instance=~\"$server\", domain=~\"$domain\"}))",
             "format": "table",
             "refId": "A"
           }
         ],
         "transformations": [
           {
+            "id": "groupBy",
+            "options": {
+              "fields": {
+                "Value": {
+                  "aggregations": ["lastNotNull"],
+                  "operation": "aggregate"
+                },
+                "user_agent": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                }
+              }
+            }
+          },
+          {
             "id": "organize",
             "options": {
-              "excludeByName": {"Time": true, "domain": true},
+              "excludeByName": {"Time": true, "__name__": true, "instance": true, "job": true},
               "renameByName": {
                 "user_agent": "User Agent",
-                "Value": "Requests"
+                "Value (lastNotNull)": "Requests"
               }
+            }
+          },
+          {
+            "id": "sortBy",
+            "options": {
+              "sort": [
+                {
+                  "field": "Requests",
+                  "desc": true
+                }
+              ]
             }
           }
         ]
@@ -135,23 +198,49 @@
       {
         "title": "Top URLs",
         "type": "table",
-        "gridPos": {"h": 10, "w": 8, "x": 16, "y": 16},
+        "gridPos": {"h": 10, "w": 8, "x": 16, "y": 24},
         "targets": [
           {
-            "expr": "topk(20, sqcdy_site_top_url_requests{domain=\"$domain\"})",
+            "expr": "topk(20, sum by (url) (sqcdy_site_top_url_requests{instance=~\"$server\", domain=~\"$domain\"}))",
             "format": "table",
             "refId": "A"
           }
         ],
         "transformations": [
           {
+            "id": "groupBy",
+            "options": {
+              "fields": {
+                "Value": {
+                  "aggregations": ["lastNotNull"],
+                  "operation": "aggregate"
+                },
+                "url": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                }
+              }
+            }
+          },
+          {
             "id": "organize",
             "options": {
-              "excludeByName": {"Time": true, "domain": true},
+              "excludeByName": {"Time": true, "__name__": true, "instance": true, "job": true},
               "renameByName": {
                 "url": "URL",
-                "Value": "Requests"
+                "Value (lastNotNull)": "Requests"
               }
+            }
+          },
+          {
+            "id": "sortBy",
+            "options": {
+              "sort": [
+                {
+                  "field": "Requests",
+                  "desc": true
+                }
+              ]
             }
           }
         ]
@@ -159,10 +248,10 @@
       {
         "title": "HTTP Status Codes",
         "type": "piechart",
-        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 26},
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 26},
         "targets": [
           {
-            "expr": "sqcdy_site_status_code_total{domain=\"$domain\"}",
+            "expr": "sum by (status) (sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"})",
             "legendFormat": "{{status}}",
             "refId": "A"
           }
