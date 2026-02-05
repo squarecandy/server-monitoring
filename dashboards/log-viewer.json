@@ -16,7 +16,10 @@
         "name": "server",
         "type": "query",
         "query": "label_values(instance)",
-        "datasource": "Loki",
+        "datasource": {
+          "type": "loki",
+          "uid": "grafanacloud-squarecandy-logs"
+        },
         "current": {},
         "refresh": 1,
         "includeAll": true,
@@ -27,7 +30,10 @@
         "name": "domain",
         "type": "query",
         "query": "label_values({instance=~\"$server\"}, domain)",
-        "datasource": "Loki",
+        "datasource": {
+          "type": "loki",
+          "uid": "grafanacloud-squarecandy-logs"
+        },
         "current": {},
         "refresh": 1,
         "includeAll": true,
@@ -49,7 +55,10 @@
       "title": "Access Logs",
       "type": "logs",
       "gridPos": {"h": 20, "w": 24, "x": 0, "y": 0},
-      "datasource": "Loki",
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-squarecandy-logs"
+      },
       "targets": [
         {
           "expr": "{job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status=~\"${status:regex}\"}",
@@ -70,7 +79,10 @@
       "title": "Log Volume by Status Code",
       "type": "timeseries",
       "gridPos": {"h": 10, "w": 12, "x": 0, "y": 20},
-      "datasource": "Loki",
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-squarecandy-logs"
+      },
       "targets": [
         {
           "expr": "sum by (status) (count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\"}[1m]))",
@@ -92,7 +104,10 @@
       "title": "Top URLs (from logs)",
       "type": "table",
       "gridPos": {"h": 10, "w": 12, "x": 12, "y": 20},
-      "datasource": "Loki",
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-squarecandy-logs"
+      },
       "targets": [
         {
           "expr": "topk(20, sum by (url) (count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status=~\"${status:regex}\"}[$__range])))",
@@ -127,7 +142,10 @@
       "title": "Error Logs",
       "type": "logs",
       "gridPos": {"h": 15, "w": 24, "x": 0, "y": 30},
-      "datasource": "Loki",
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-squarecandy-logs"
+      },
       "targets": [
         {
           "expr": "{job=\"error-logs\",instance=~\"$server\",domain=~\"$domain\"}",
