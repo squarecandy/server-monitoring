@@ -346,7 +346,7 @@ logs:
             - source_labels: [__path__]
               regex: '/var/www/vhosts/([^/]+)/.*'
               target_label: domain
-              replacement: '$1'
+              replacement: $1
           pipeline_stages:
             # Drop monitoring/bot traffic to reduce noise and costs
             - drop:
@@ -365,7 +365,7 @@ logs:
             - source_labels: [__path__]
               regex: '/var/www/vhosts/([^/]+)/.*'
               target_label: domain
-              replacement: '$1'
+              replacement: $1
           pipeline_stages:
             - regex:
                 expression: '^\[(?P<time>[^\]]+)\] \[(?P<level>\w+)\]'
