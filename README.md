@@ -163,3 +163,11 @@ After installation, you'll have:
 - **180-Day History**: With paid Grafana Cloud plan (~$50/mo)
 - **Smart Alerts**: Email and Slack notifications for issues
 - **No Performance Impact**: <1% CPU overhead
+
+## License
+
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+See LICENSE.md
+
+THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
