@@ -159,7 +159,7 @@
         "gridPos": {"h": 10, "w": 12, "x": 0, "y": 22},
         "targets": [
           {
-            "expr": "100 * sum(rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"[45]..\"}[5m])) / sum(rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[5m]))",
+            "expr": "(100 * sum(rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"[45]..\"}[5m])) / sum(rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[5m]))) or vector(0)",
             "refId": "A"
           }
         ],
@@ -175,7 +175,8 @@
                 {"value": 5, "color": "orange"},
                 {"value": 10, "color": "red"}
               ]
-            }
+            },
+            "noValue": "0"
           }
         },
         "options": {
