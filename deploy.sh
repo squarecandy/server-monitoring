@@ -38,7 +38,7 @@ if [ -f "$TEMP_DIR/install.sh" ]; then
     echo "  - Regenerating grafana-agent configuration..."
     # Run install.sh to update config (it will skip package installation)
     cd "$TEMP_DIR"
-    bash install.sh > /dev/null 2>&1 || true
+    bash install.sh || true
     echo "  - Configuration updated"
 fi
 
