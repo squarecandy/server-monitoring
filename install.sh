@@ -326,10 +326,10 @@ if [ "$LOKI_ENABLED" = true ]; then
     if [ "$SQCDY_PLATFORM" = "plesk" ]; then
         ACCESS_LOG_PATH="/var/www/vhosts/*/logs/*access*log"
         ERROR_LOG_PATH="/var/www/vhosts/*/logs/*error*log"
-        # Regex: extracts site name (main domain or subdomain) as domain label
-        # /var/www/vhosts/example.com/logs/access_ssl_log → domain=example.com
-        # /var/www/vhosts/example.com/logs/app.example.com/access_ssl_log → domain=app.example.com
-        DOMAIN_REGEX="^/var/www/vhosts/[^/]+/logs/(?:(?P<domain>[^/]+)/)?access.*log$"
+        # Regex: extracts main domain and optional subdomain directory
+        # /var/www/vhosts/example.com/logs/access_ssl_log → main_domain=example.com, sub_dir=""
+        # /var/www/vhosts/example.com/logs/app.example.com/access_ssl_log → main_domain=example.com, sub_dir=app.example.com
+        DOMAIN_REGEX="^/var/www/vhosts/(?P<main_domain>[^/]+)/logs/(?:(?P<sub_dir>[^/]+)/)?.*$"
     elif [ "$SQCDY_PLATFORM" = "gridpane" ]; then
         ACCESS_LOG_PATH="/var/log/nginx/*access.log"
         ERROR_LOG_PATH="/var/log/nginx/*error.log"
@@ -368,10 +368,14 @@ logs:
                 instance: $(hostname)
                 __path__: ${ACCESS_LOG_PATH}
           pipeline_stages:
-            # Extract site name as domain from filename
+            # Extract main domain and subdomain directory from filename
             - regex:
                 source: filename
                 expression: '${DOMAIN_REGEX}'
+            # Set domain to subdomain if present, otherwise use main_domain
+            - template:
+                source: domain
+                template: '{{ if .sub_dir }}{{ .sub_dir }}{{ else }}{{ .main_domain }}{{ end }}'
             - labels:
                 domain:
             # Extract status code and map to range (2xx, 3xx, 4xx, 5xx)
@@ -401,10 +405,14 @@ logs:
                 __path__: ${ERROR_LOG_PATH}
                 status_range: error
           pipeline_stages:
-            # Extract domain from filename
+            # Extract main domain and subdomain directory from filename
             - regex:
                 source: filename
                 expression: '${DOMAIN_REGEX}'
+            # Set domain to subdomain if present, otherwise use main_domain
+            - template:
+                source: domain
+                template: '{{ if .sub_dir }}{{ .sub_dir }}{{ else }}{{ .main_domain }}{{ end }}'
             - labels:
                 domain:
             - regex:
