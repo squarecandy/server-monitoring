@@ -26,6 +26,12 @@ NGINX_LOG_PATTERN = re.compile(
     r'"(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
 )
 
+# GridPane nginx log format: [TIME] IP RESPONSE_TIME - VHOST "METHOD URL PROTOCOL" STATUS SIZE ...
+GRIDPANE_LOG_PATTERN = re.compile(
+    r'\[(?P<time>[^\]]+)\] (?P<ip>[\d.]+) [\d.]+ - \S+ '
+    r'"(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+)'
+)
+
 APACHE_LOG_PATTERN = re.compile(
     r'(?P<ip>[\d.]+) - (?P<user>\S+) \[(?P<time>[^\]]+)\] '
     r'"(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+)'
@@ -107,7 +113,15 @@ class LogAnalyzer:
     
     def parse_log_line(self, line: str) -> Optional[Dict]:
         """Parse a single log line"""
-        # Try nginx format first
+        # Try GridPane format first (if on GridPane platform)
+        if self.platform == 'gridpane':
+            match = GRIDPANE_LOG_PATTERN.match(line)
+            if match:
+                data = match.groupdict()
+                data['user_agent'] = ''  # GridPane format doesn't include user agent in our regex
+                return data
+        
+        # Try standard nginx format
         match = NGINX_LOG_PATTERN.match(line)
         if not match:
             # Try apache format
