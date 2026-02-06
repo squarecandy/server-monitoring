@@ -26,7 +26,7 @@ get_user_metrics() {
     ps -eo user:32,%cpu,%mem,rss,comm --no-headers | awk '
     BEGIN {
         # System users to exclude
-        split("root apache nginx www-data mysql mariadb postgres chrony dbus polkitd grafana prometheus postfix dovecot named bind psaadm psacln daemon bin sys sync games man lp mail news uucp proxy backup list irc gnats nobody systemd rpc", excluded, " ")
+        split("root apache nginx www-data mysql mariadb postgres chrony dbus polkitd grafana prometheus postfix dovecot named bind psaadm psacln daemon bin sys sync games man lp mail news uucp proxy backup list irc gnats nobody systemd rpc messagebus redis syslog vector", excluded, " ")
         for (i in excluded) exclude[excluded[i]] = 1
     }
     {
@@ -38,7 +38,7 @@ get_user_metrics() {
     END {
         for (u in user) {
             # Skip if user matches excluded list or starts with excluded prefixes
-            if (u in exclude || u ~ /^(plesk-|sw-cp-|systemd-)/) continue
+            if (u in exclude || u ~ /^(plesk-|sw-cp-|systemd-|gridpane-)/) continue
             
             # Only show users with meaningful resource usage
             if (user[u]["cpu"] > 0.01 || user[u]["rss"] > 100) {

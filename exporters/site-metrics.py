@@ -154,14 +154,25 @@ class GridPaneAdapter(PlatformAdapter):
         
         try:
             for site_dir in site_path.iterdir():
-                if site_dir.is_dir() and site_dir.name not in ['html', 'default']:
-                    # GridPane typically names directories as domain names
-                    domain = site_dir.name
-                    sites.append({
-                        'domain': domain,
-                        'path': str(site_dir),
-                        'user': self._get_dir_owner(site_dir)
-                    })
+                # Skip non-directories
+                if not site_dir.is_dir():
+                    continue
+                
+                domain = site_dir.name
+                
+                # Skip GridPane system directories and internal domains
+                if domain in ['html', 'default', '22222', 'core']:
+                    continue
+                if domain.startswith('core-'):
+                    continue
+                if domain.endswith('.gridpanevps.com'):
+                    continue
+                
+                sites.append({
+                    'domain': domain,
+                    'path': str(site_dir),
+                    'user': self._get_dir_owner(site_dir)
+                })
         except Exception as e:
             print(f"Error getting GridPane sites: {e}", file=sys.stderr)
         
