@@ -10,9 +10,14 @@ log_analyzer = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(log_analyzer)
 
 LogAnalyzer = log_analyzer.LogAnalyzer
+get_platform_info = log_analyzer.get_platform_info
+
+# Get platform info
+platform_info = get_platform_info()
+print(f"Platform: {platform_info.get('platform')}\n")
 
 # Create analyzer
-analyzer = LogAnalyzer()
+analyzer = LogAnalyzer(platform_info)
 
 # Get log files
 log_files_dict = analyzer.get_log_files()
