@@ -26,10 +26,11 @@ NGINX_LOG_PATTERN = re.compile(
     r'"(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
 )
 
-# GridPane nginx log format: [TIME] IP RESPONSE_TIME - VHOST "METHOD URL PROTOCOL" STATUS SIZE ...
+# GridPane nginx log format: [TIME] IP RESPONSE_TIME - VHOST "METHOD URL PROTOCOL" STATUS SIZE RESPONSE_TIME "REFERRER" "USER_AGENT"
 GRIDPANE_LOG_PATTERN = re.compile(
     r'\[(?P<time>[^\]]+)\] (?P<ip>[\d.]+) [\d.]+ - \S+ '
-    r'"(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+)'
+    r'"(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+) '
+    r'[\d.]+ "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
 )
 
 APACHE_LOG_PATTERN = re.compile(

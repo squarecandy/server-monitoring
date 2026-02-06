@@ -330,17 +330,17 @@ if [ "$LOKI_ENABLED" = true ]; then
     elif [ "$SQCDY_PLATFORM" = "gridpane" ]; then
         ACCESS_LOG_PATH="/var/log/nginx/*access.log"
         ERROR_LOG_PATH="/var/log/nginx/*error.log"
-        # GridPane log format: domain.com-access.log or domain.com.access.log
-        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>[^/-]+)[-.].*$"
+        # GridPane log format: domain.com.access.log - extract full domain
+        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>.+?)[-.]access\\.log$"
     elif [ "$SQCDY_PLATFORM" = "ubuntu-nginx" ]; then
         ACCESS_LOG_PATH="/var/log/nginx/*access.log"
         ERROR_LOG_PATH="/var/log/nginx/*error.log"
-        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>[^/-]+)[-.].*$"
+        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>.+?)[-.]access\\.log$"
     else
         # Default fallback
         ACCESS_LOG_PATH="/var/log/nginx/*access.log"
         ERROR_LOG_PATH="/var/log/nginx/*error.log"
-        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>[^/-]+)[-.].*$"
+        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>.+?)[-.]access\\.log$"
     fi
 
 cat >> /etc/grafana-agent.yaml <<LOKIEOF
