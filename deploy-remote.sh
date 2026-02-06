@@ -49,6 +49,17 @@ fi
 echo "✓ SSH connection successful"
 echo ""
 
+# Detect if we need sudo (check if user is root or has sudo)
+echo "Checking privileges..."
+if ssh "${REMOTE_USER}@${REMOTE_HOST}" "[ \$(id -u) -eq 0 ]" 2>/dev/null; then
+    SUDO=""
+    echo "✓ Running as root"
+else
+    SUDO="sudo"
+    echo "✓ Running with sudo"
+fi
+echo ""
+
 # Create remote temp directory
 REMOTE_TEMP="/tmp/sqcdy-deploy-$(date +%s)"
 echo "Creating remote staging directory..."
@@ -72,14 +83,14 @@ echo ""
 echo "Running installation on remote server..."
 echo "========================================"
 
-ssh "${REMOTE_USER}@${REMOTE_HOST}" "cd $REMOTE_TEMP && bash install.sh"
+ssh "${REMOTE_USER}@${REMOTE_HOST}" "cd $REMOTE_TEMP && $SUDO bash install.sh"
 
 echo "========================================"
 echo ""
 
 # Clean up remote temp directory
 echo "Cleaning up..."
-ssh "${REMOTE_USER}@${REMOTE_HOST}" "rm -rf $REMOTE_TEMP"
+ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO rm -rf $REMOTE_TEMP"
 echo "✓ Cleanup complete"
 echo ""
 
