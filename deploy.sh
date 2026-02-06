@@ -49,9 +49,15 @@ cp "$TEMP_DIR/exporters/site-metrics.py" "$INSTALL_DIR/exporters/"
 cp "$TEMP_DIR/exporters/user-metrics.sh" "$INSTALL_DIR/exporters/"
 cp "$TEMP_DIR/exporters/log-analyzer.py" "$INSTALL_DIR/exporters/"
 
+# Copy test scripts
+echo "  - Copying test scripts..."
+mkdir -p "$INSTALL_DIR/tests"
+cp -r "$TEMP_DIR/tests/"* "$INSTALL_DIR/tests/" 2>/dev/null || true
+
 # Make scripts executable
 chmod +x "$INSTALL_DIR/exporters/"*.sh
 chmod +x "$INSTALL_DIR/exporters/"*.py
+chmod +x "$INSTALL_DIR/tests/"*.py 2>/dev/null || true
 
 echo "  - Files deployed successfully"
 echo ""
