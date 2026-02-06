@@ -119,7 +119,6 @@ class LogAnalyzer:
             match = GRIDPANE_LOG_PATTERN.match(line)
             if match:
                 data = match.groupdict()
-                data['user_agent'] = ''  # GridPane format doesn't include user agent in our regex
                 return data
         
         # Try standard nginx format
