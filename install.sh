@@ -326,7 +326,10 @@ if [ "$LOKI_ENABLED" = true ]; then
     if [ "$SQCDY_PLATFORM" = "plesk" ]; then
         ACCESS_LOG_PATH="/var/www/vhosts/*/logs/*access*log"
         ERROR_LOG_PATH="/var/www/vhosts/*/logs/*error*log"
-        DOMAIN_REGEX="^/var/www/vhosts/(?P<domain>[^/]+)/.*$"
+        # Regex: extracts site name (main domain or subdomain) as domain label
+        # /var/www/vhosts/example.com/logs/access_ssl_log → domain=example.com
+        # /var/www/vhosts/example.com/logs/app.example.com/access_ssl_log → domain=app.example.com
+        DOMAIN_REGEX="^/var/www/vhosts/[^/]+/logs/(?:(?P<domain>[^/]+)/)?access.*log$"
     elif [ "$SQCDY_PLATFORM" = "gridpane" ]; then
         ACCESS_LOG_PATH="/var/log/nginx/*access.log"
         ERROR_LOG_PATH="/var/log/nginx/*error.log"
@@ -365,7 +368,7 @@ logs:
                 instance: $(hostname)
                 __path__: ${ACCESS_LOG_PATH}
           pipeline_stages:
-            # Extract domain from filename
+            # Extract site name as domain from filename
             - regex:
                 source: filename
                 expression: '${DOMAIN_REGEX}'
