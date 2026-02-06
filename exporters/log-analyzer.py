@@ -68,13 +68,26 @@ class LogAnalyzer:
                                             log_files[subdomain_name].append(str(log_file))
         
         elif self.platform == 'gridpane':
-            # GridPane: /var/log/nginx/DOMAIN-access.log
+            # GridPane: /var/log/nginx/DOMAIN.access.log or DOMAIN-access.log
             log_path = Path(self.platform_info.get('log_path', '/var/log/nginx'))
             if log_path.exists():
-                for log_file in log_path.glob('*-access.log*'):
+                # Match both formats: domain.access.log and domain-access.log
+                for log_file in log_path.glob('*access.log*'):
+                    filename = log_file.name
+                    
+                    # Skip system/internal logs
+                    if filename in ['access.log', 'error.log']:
+                        continue
+                    if 'gridpanevps.com' in filename:
+                        continue
+                    
                     # Extract domain from filename
-                    domain = log_file.name.replace('-access.log', '').replace('.gz', '')
-                    log_files[domain].append(str(log_file))
+                    # Remove .access.log or -access.log and any .gz extension
+                    domain = filename.replace('.access.log', '').replace('-access.log', '').replace('.gz', '')
+                    
+                    # Skip empty domains
+                    if domain:
+                        log_files[domain].append(str(log_file))
         
         else:
             # Generic Ubuntu: try to map nginx/apache logs to sites

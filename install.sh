@@ -382,6 +382,10 @@ logs:
             # Drop monitoring/bot traffic to reduce noise and costs
             - drop:
                 expression: '.*(UptimeRobot|neat\\.software\\.Ping|Googlebot|bingbot|monitoring).*'
+            # Drop GridPane system domains (only for GridPane platform)
+            - drop:
+                source: filename
+                expression: '.*gridpanevps\.com.*'
         
         # Error logs
         - job_name: error-logs
@@ -404,6 +408,10 @@ logs:
                 expression: '^\[(?P<time>[^\]]+)\] \[(?P<level>\w+)\]'
             - labels:
                 level:
+            # Drop GridPane system domains
+            - drop:
+                source: filename
+                expression: '.*gridpanevps\.com.*'
 
 LOKIEOF
 fi
