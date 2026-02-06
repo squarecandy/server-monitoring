@@ -21,7 +21,7 @@
         {
           "name": "server",
           "type": "query",
-          "query": "label_values(sqcdy_user_cpu_percent, instance)",
+          "query": "label_values(sqcdy_sites_total, instance)",
           "current": {},
           "refresh": 1,
           "includeAll": true,

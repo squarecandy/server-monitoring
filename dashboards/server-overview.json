@@ -21,13 +21,12 @@
         {
           "name": "server",
           "type": "query",
-          "query": "label_values(node_load1, instance)",
+          "query": "label_values(sqcdy_sites_total, instance)",
           "current": {},
           "refresh": 1,
           "includeAll": true,
           "multi": false,
-          "sort": 1,
-          "regex": "/([^:]+).*/"
+          "sort": 1
         }
       ]
     },
