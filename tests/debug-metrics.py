@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """Debug script to check what the log analyzer is actually collecting"""
 import sys
-sys.path.insert(0, '/opt/squarecandy-monitoring/exporters')
+import importlib.util
 
-from log_analyzer import LogAnalyzer
-import json
+# Load log-analyzer.py as a module
+spec = importlib.util.spec_from_file_location("log_analyzer", 
+                                               "/opt/squarecandy-monitoring/exporters/log-analyzer.py")
+log_analyzer = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(log_analyzer)
+
+LogAnalyzer = log_analyzer.LogAnalyzer
 
 # Create analyzer
 analyzer = LogAnalyzer()
