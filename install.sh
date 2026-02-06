@@ -324,8 +324,8 @@ if [ "$LOKI_ENABLED" = true ]; then
     
     # Platform-specific log paths and regex patterns
     if [ "$SQCDY_PLATFORM" = "plesk" ]; then
-        ACCESS_LOG_PATH="/var/www/vhosts/*/logs/*access*log"
-        ERROR_LOG_PATH="/var/www/vhosts/*/logs/*error*log"
+        ACCESS_LOG_PATH="/var/www/vhosts/*/logs/**/*access*log"
+        ERROR_LOG_PATH="/var/www/vhosts/*/logs/**/*error*log"
         # Regex: extracts main domain and optional subdomain directory
         # /var/www/vhosts/example.com/logs/access_ssl_log → main_domain=example.com, sub_dir=""
         # /var/www/vhosts/example.com/logs/app.example.com/access_ssl_log → main_domain=example.com, sub_dir=app.example.com
