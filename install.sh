@@ -321,6 +321,28 @@ EOF
 
 # Add Loki configuration if enabled
 if [ "$LOKI_ENABLED" = true ]; then
+    
+    # Platform-specific log paths and regex patterns
+    if [ "$SQCDY_PLATFORM" = "plesk" ]; then
+        ACCESS_LOG_PATH="/var/www/vhosts/*/logs/*access*log"
+        ERROR_LOG_PATH="/var/www/vhosts/*/logs/*error*log"
+        DOMAIN_REGEX="^/var/www/vhosts/(?P<domain>[^/]+)/.*$"
+    elif [ "$SQCDY_PLATFORM" = "gridpane" ]; then
+        ACCESS_LOG_PATH="/var/log/nginx/*access.log"
+        ERROR_LOG_PATH="/var/log/nginx/*error.log"
+        # GridPane log format: domain.com-access.log or domain.com.access.log
+        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>[^/-]+)[-.].*$"
+    elif [ "$SQCDY_PLATFORM" = "ubuntu-nginx" ]; then
+        ACCESS_LOG_PATH="/var/log/nginx/*access.log"
+        ERROR_LOG_PATH="/var/log/nginx/*error.log"
+        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>[^/-]+)[-.].*$"
+    else
+        # Default fallback
+        ACCESS_LOG_PATH="/var/log/nginx/*access.log"
+        ERROR_LOG_PATH="/var/log/nginx/*error.log"
+        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>[^/-]+)[-.].*$"
+    fi
+
 cat >> /etc/grafana-agent.yaml <<LOKIEOF
 logs:
   configs:
@@ -333,7 +355,7 @@ logs:
       positions:
         filename: /tmp/positions.yaml
       scrape_configs:
-        # Plesk access logs
+        # Access logs
         - job_name: access-logs
           static_configs:
             - targets:
@@ -341,12 +363,12 @@ logs:
               labels:
                 job: access-logs
                 instance: $(hostname)
-                __path__: /var/www/vhosts/*/logs/*access*log
+                __path__: ${ACCESS_LOG_PATH}
           pipeline_stages:
             # Extract domain from filename
             - regex:
                 source: filename
-                expression: '^/var/www/vhosts/(?P<domain>[^/]+)/.*$'
+                expression: '${DOMAIN_REGEX}'
             - labels:
                 domain:
             # Extract status code and map to range (2xx, 3xx, 4xx, 5xx)
@@ -361,7 +383,7 @@ logs:
             - drop:
                 expression: '.*(UptimeRobot|neat\\.software\\.Ping|Googlebot|bingbot|monitoring).*'
         
-        # Plesk error logs
+        # Error logs
         - job_name: error-logs
           static_configs:
             - targets:
@@ -369,13 +391,13 @@ logs:
               labels:
                 job: error-logs
                 instance: $(hostname)
-                __path__: /var/www/vhosts/*/logs/*error*log
+                __path__: ${ERROR_LOG_PATH}
                 status_range: error
           pipeline_stages:
             # Extract domain from filename
             - regex:
                 source: filename
-                expression: '^/var/www/vhosts/(?P<domain>[^/]+)/.*$'
+                expression: '${DOMAIN_REGEX}'
             - labels:
                 domain:
             - regex:
@@ -393,21 +415,30 @@ if [ "$LOKI_ENABLED" = true ]; then
     echo ""
     echo "Configuring log file access for grafana-agent..."
     
-    # Install ACL package if not present
-    if ! command -v setfacl &> /dev/null; then
-        if command -v yum &> /dev/null; then
-            yum install -y acl -q
-        elif command -v apt-get &> /dev/null; then
-            apt-get install -y acl -qq
+    # Platform-specific log access configuration
+    if [ "$SQCDY_PLATFORM" = "plesk" ]; then
+        # Install ACL package if not present
+        if ! command -v setfacl &> /dev/null; then
+            if command -v yum &> /dev/null; then
+                yum install -y acl -q
+            elif command -v apt-get &> /dev/null; then
+                apt-get install -y acl -qq
+            fi
+        fi
+        
+        # Grant grafana-agent access to traverse domain directories and read logs (Plesk)
+        setfacl -m u:grafana-agent:x /var/www/vhosts/*/ 2>/dev/null
+        setfacl -R -m u:grafana-agent:rX /var/www/vhosts/*/logs/ 2>/dev/null
+        setfacl -R -m d:u:grafana-agent:rX /var/www/vhosts/*/logs/ 2>/dev/null
+        setfacl -R -m u:grafana-agent:r /var/www/vhosts/*/logs/*access*log 2>/dev/null
+        setfacl -R -m u:grafana-agent:r /var/www/vhosts/*/logs/*error*log 2>/dev/null
+        
+    elif [ "$SQCDY_PLATFORM" = "gridpane" ] || [ "$SQCDY_PLATFORM" = "ubuntu-nginx" ]; then
+        # For GridPane/Ubuntu, add grafana-agent to adm group for /var/log/nginx access
+        if ! groups grafana-agent 2>/dev/null | grep -q "\badm\b"; then
+            usermod -a -G adm grafana-agent
         fi
     fi
-    
-    # Grant grafana-agent access to traverse domain directories and read logs
-    setfacl -m u:grafana-agent:x /var/www/vhosts/*/ 2>/dev/null
-    setfacl -R -m u:grafana-agent:rX /var/www/vhosts/*/logs/ 2>/dev/null
-    setfacl -R -m d:u:grafana-agent:rX /var/www/vhosts/*/logs/ 2>/dev/null
-    setfacl -R -m u:grafana-agent:r /var/www/vhosts/*/logs/*access*log 2>/dev/null
-    setfacl -R -m u:grafana-agent:r /var/www/vhosts/*/logs/*error*log 2>/dev/null
     
     echo -e "${GREEN}✓ Log access configured for grafana-agent user${NC}"
 fi

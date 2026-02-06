@@ -69,7 +69,7 @@ class LogAnalyzer:
         
         elif self.platform == 'gridpane':
             # GridPane: /var/log/nginx/DOMAIN-access.log
-            log_path = Path('/var/log/nginx')
+            log_path = Path(self.platform_info.get('log_path', '/var/log/nginx'))
             if log_path.exists():
                 for log_file in log_path.glob('*-access.log*'):
                     # Extract domain from filename
