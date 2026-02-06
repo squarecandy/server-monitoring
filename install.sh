@@ -200,7 +200,7 @@ echo ""
 # Install dependencies
 echo "Installing dependencies..."
 if command -v apt-get &> /dev/null; then
-    apt-get update -qq
+    apt-get update -qq --allow-releaseinfo-change
     apt-get install -y -qq curl python3 python3-pip netcat > /dev/null 2>&1
     echo -e "${GREEN}✓ Dependencies installed (Debian/Ubuntu)${NC}"
 elif command -v yum &> /dev/null; then
