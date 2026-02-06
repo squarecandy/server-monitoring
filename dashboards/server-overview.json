@@ -16,6 +16,21 @@
       "from": "now-6h",
       "to": "now"
     },
+    "templating": {
+      "list": [
+        {
+          "name": "server",
+          "type": "query",
+          "query": "label_values(node_load1, instance)",
+          "current": {},
+          "refresh": 1,
+          "includeAll": true,
+          "multi": false,
+          "sort": 1,
+          "regex": "/([^:]+).*/"
+        }
+      ]
+    },
     "panels": [
       {
         "title": "CPU Usage %",
@@ -23,7 +38,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
         "targets": [
           {
-            "expr": "label_replace(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
+            "expr": "label_replace(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\",instance=~\"$server.*\"}[5m])) * 100), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -50,17 +65,17 @@
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
         "targets": [
           {
-            "expr": "label_replace(node_load1, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
+            "expr": "label_replace(node_load1{instance=~\"$server.*\"}, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
             "legendFormat": "{{instance}} - 1m",
             "refId": "A"
           },
           {
-            "expr": "label_replace(node_load5, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
+            "expr": "label_replace(node_load5{instance=~\"$server.*\"}, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
             "legendFormat": "{{instance}} - 5m",
             "refId": "B"
           },
           {
-            "expr": "label_replace(node_load15, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
+            "expr": "label_replace(node_load15{instance=~\"$server.*\"}, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
             "legendFormat": "{{instance}} - 15m",
             "refId": "C"
           }
@@ -77,7 +92,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
         "targets": [
           {
-            "expr": "label_replace(avg by (instance) (irate(node_cpu_seconds_total{mode=\"steal\"}[5m])) * 100, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
+            "expr": "label_replace(avg by (instance) (irate(node_cpu_seconds_total{mode=\"steal\",instance=~\"$server.*\"}[5m])) * 100, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -102,7 +117,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
         "targets": [
           {
-            "expr": "label_replace(100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
+            "expr": "label_replace(100 * (1 - (node_memory_MemAvailable_bytes{instance=~\"$server.*\"} / node_memory_MemTotal_bytes{instance=~\"$server.*\"})), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -129,7 +144,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
         "targets": [
           {
-            "expr": "label_replace(100 * (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
+            "expr": "label_replace(100 * (1 - (node_memory_SwapFree_bytes{instance=~\"$server.*\"} / node_memory_SwapTotal_bytes{instance=~\"$server.*\"})), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -156,7 +171,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
         "targets": [
           {
-            "expr": "label_replace(100 - (100 * node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
+            "expr": "label_replace(100 - (100 * node_filesystem_avail_bytes{mountpoint=\"/\",instance=~\"$server.*\"} / node_filesystem_size_bytes{mountpoint=\"/\",instance=~\"$server.*\"}), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -183,7 +198,7 @@
         "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
         "targets": [
           {
-            "expr": "sum(rate(sqcdy_site_requests_per_minute[5m]))",
+            "expr": "sum(rate(sqcdy_site_requests_per_minute{instance=~\"$server.*\"}[5m]))",
             "legendFormat": "Total Requests/min",
             "refId": "A"
           }
@@ -200,7 +215,7 @@
         "gridPos": {"h": 8, "w": 24, "x": 0, "y": 32},
         "targets": [
           {
-            "expr": "sum(rate(sqcdy_site_bytes_per_minute[5m])) / 1024 / 1024",
+            "expr": "sum(rate(sqcdy_site_bytes_per_minute{instance=~\"$server.*\"}[5m])) / 1024 / 1024",
             "legendFormat": "Total MB/min",
             "refId": "A"
           }
