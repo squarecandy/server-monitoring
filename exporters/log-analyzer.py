@@ -68,24 +68,28 @@ class LogAnalyzer:
                                             log_files[subdomain_name].append(str(log_file))
         
         elif self.platform == 'gridpane':
-            # GridPane: /var/log/nginx/DOMAIN.access.log or DOMAIN-access.log
+            # GridPane: /var/log/nginx/DOMAIN.access.log (not rotated .log.1, .log.2, etc.)
             log_path = Path(self.platform_info.get('log_path', '/var/log/nginx'))
             if log_path.exists():
-                # Match both formats: domain.access.log and domain-access.log
-                for log_file in log_path.glob('*access.log*'):
+                for log_file in log_path.iterdir():
+                    if not log_file.is_file():
+                        continue
+                    
                     filename = log_file.name
                     
-                    # Skip system/internal logs
-                    if filename in ['access.log', 'error.log']:
+                    # Only current access logs (not rotated .log.1, .log.gz, etc.)
+                    if not filename.endswith('.access.log'):
+                        continue
+                    
+                    # Skip system logs
+                    if filename == 'access.log':
                         continue
                     if 'gridpanevps.com' in filename:
                         continue
                     
-                    # Extract domain from filename
-                    # Remove .access.log or -access.log and any .gz extension
-                    domain = filename.replace('.access.log', '').replace('-access.log', '').replace('.gz', '')
+                    # Extract domain: remove .access.log suffix
+                    domain = filename.replace('.access.log', '')
                     
-                    # Skip empty domains
                     if domain:
                         log_files[domain].append(str(log_file))
         
