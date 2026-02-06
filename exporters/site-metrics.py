@@ -93,13 +93,14 @@ class PleskAdapter(PlatformAdapter):
             
             for line in result.stdout.strip().split('\n'):
                 domain = line.strip()
-                if domain and not domain.startswith('-'):
-                    site_path = self.platform_info.get('site_path', '/var/www/vhosts')
-                    sites.append({
-                        'domain': domain,
-                        'path': f"{site_path}/{domain}",
-                        'user': 'plesk-user'  # Simplified - user lookup is expensive
-                    })
+                if not domain or domain.startswith('-'):
+                    continue
+                site_path = self.platform_info.get('site_path', '/var/www/vhosts')
+                sites.append({
+                    'domain': domain,
+                    'path': f"{site_path}/{domain}",
+                    'user': 'plesk-user'  # Simplified - user lookup is expensive
+                })
         except Exception as e:
             print(f"Error getting Plesk sites: {e}", file=sys.stderr)
         

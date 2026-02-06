@@ -91,12 +91,16 @@ class LogAnalyzer:
                     # Skip system logs
                     if filename == 'access.log':
                         continue
-                    if 'gridpanevps.com' in filename:
-                        continue
                     
                     # Extract domain: remove .access.log suffix
                     domain = filename.replace('.access.log', '')
-                    
+                    # Filter out system domains and gridpanevps.com
+                    if domain in ['22222', 'core']:
+                        continue
+                    if domain.startswith('core-') or domain.startswith('core-release-'):
+                        continue
+                    if domain.endswith('.gridpanevps.com'):
+                        continue
                     if domain:
                         log_files[domain].append(str(log_file))
         
