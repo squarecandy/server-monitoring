@@ -135,6 +135,13 @@ docs/               - Documentation
 - Group most common error messages, sort by volume (how to find similar but not 100% identical messages?)
 - **Additional log sources**: PHP-FPM logs, database slow queries
 
+### _if_ monthly usage goes over allowances in basic paid plan
+
+- Look at [Adaptive Metrics](https://grafana.com/docs/grafana-cloud/adaptive-telemetry/adaptive-metrics/#manage-metrics-costs-via-adaptive-metrics) for possible savings. See https://squarecandy.grafana.net/a/grafana-adaptive-metrics-app/rule-management 
+- Shorten log retention
+- Tweak pace of data collection (slightly slower)
+- Ask for assistance finding other easy places to save
+
 ## What You Get
 
 After installation, you'll have:
