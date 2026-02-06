@@ -217,6 +217,8 @@ class LogAnalyzer:
     def collect_metrics(self) -> str:
         """Collect all metrics in Prometheus format"""
         output = []
+        # Get hostname for instance label
+        instance = os.uname()[1] if hasattr(os, 'uname') else os.getenv('HOSTNAME', 'unknown')
         
         # Headers
         output.append("# HELP sqcdy_site_requests_total Total HTTP requests in time window")
@@ -241,31 +243,31 @@ class LogAnalyzer:
         for domain, files in log_files.items():
             print(f"Analyzing logs for {domain}...", file=sys.stderr)
             metrics = self.analyze_site_logs(domain, files)
-            
+
             # Basic metrics
-            output.append(f'sqcdy_site_requests_total{{domain="{domain}"}} {metrics["requests_total"]}')
-            output.append(f'sqcdy_site_traffic_bytes{{domain="{domain}"}} {metrics["bytes_total"]}')
-            output.append(f'sqcdy_site_requests_per_minute{{domain="{domain}"}} {metrics["requests_per_minute"]:.2f}')
-            output.append(f'sqcdy_site_bytes_per_minute{{domain="{domain}"}} {metrics["bytes_per_minute"]:.2f}')
-            
+            output.append(f'sqcdy_site_requests_total{{instance="{instance}",domain="{domain}"}} {metrics["requests_total"]}')
+            output.append(f'sqcdy_site_traffic_bytes{{instance="{instance}",domain="{domain}"}} {metrics["bytes_total"]}')
+            output.append(f'sqcdy_site_requests_per_minute{{instance="{instance}",domain="{domain}"}} {metrics["requests_per_minute"]:.2f}')
+            output.append(f'sqcdy_site_bytes_per_minute{{instance="{instance}",domain="{domain}"}} {metrics["bytes_per_minute"]:.2f}')
+
             # Top IPs (top 10)
             for ip, count in metrics['top_ips'].most_common(10):
                 safe_ip = ip.replace('"', '\\"')
-                output.append(f'sqcdy_site_top_ip_requests{{domain="{domain}",ip="{safe_ip}"}} {count}')
-            
+                output.append(f'sqcdy_site_top_ip_requests{{instance="{instance}",domain="{domain}",ip="{safe_ip}"}} {count}')
+
             # Top User Agents (top 10)
             for ua, count in metrics['top_user_agents'].most_common(10):
                 safe_ua = ua.replace('"', '\\"').replace('\\', '\\\\')
-                output.append(f'sqcdy_site_top_user_agent_requests{{domain="{domain}",user_agent="{safe_ua}"}} {count}')
-            
+                output.append(f'sqcdy_site_top_user_agent_requests{{instance="{instance}",domain="{domain}",user_agent="{safe_ua}"}} {count}')
+
             # Top URLs (top 20)
             for url, count in metrics['top_urls'].most_common(20):
                 safe_url = url.replace('"', '\\"').replace('\\', '\\\\')
-                output.append(f'sqcdy_site_top_url_requests{{domain="{domain}",url="{safe_url}"}} {count}')
-            
+                output.append(f'sqcdy_site_top_url_requests{{instance="{instance}",domain="{domain}",url="{safe_url}"}} {count}')
+
             # Status codes
             for status, count in metrics['status_codes'].items():
-                output.append(f'sqcdy_site_status_code_total{{domain="{domain}",status="{status}"}} {count}')
+                output.append(f'sqcdy_site_status_code_total{{instance="{instance}",domain="{domain}",status="{status}"}} {count}')
         
         # Metadata
         output.append(f'# HELP sqcdy_log_analysis_window_minutes Analysis time window in minutes')
