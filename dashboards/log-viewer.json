@@ -69,7 +69,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (status_range) (rate({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=~\"$status\"} [1m]))",
+          "expr": "sum by (status_range) (rate({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=~\"$status\"} [$__interval]))",
           "legendFormat": "{{status_range}}",
           "refId": "A"
         }

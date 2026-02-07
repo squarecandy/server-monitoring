@@ -37,7 +37,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
         "targets": [
           {
-            "expr": "label_replace(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\",instance=~\"$server.*\"}[5m])) * 100), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
+            "expr": "label_replace(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\",instance=~\"$server.*\"}[$__rate_interval])) * 100), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -91,7 +91,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
         "targets": [
           {
-            "expr": "label_replace(avg by (instance) (irate(node_cpu_seconds_total{mode=\"steal\",instance=~\"$server.*\"}[5m])) * 100, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
+            "expr": "label_replace(avg by (instance) (irate(node_cpu_seconds_total{mode=\"steal\",instance=~\"$server.*\"}[$__rate_interval])) * 100, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -197,7 +197,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
         "targets": [
           {
-            "expr": "sum(rate(sqcdy_site_requests_total{instance=~\"$server\"}[5m])) * 60",
+            "expr": "sum(rate(sqcdy_site_requests_total{instance=~\"$server\"}[$__rate_interval])) * 60",
             "legendFormat": "Total Requests/min",
             "refId": "A"
           }
@@ -214,7 +214,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
         "targets": [
           {
-            "expr": "sum(rate(sqcdy_site_traffic_bytes{instance=~\"$server\"}[5m])) * 60 / 1024 / 1024",
+            "expr": "sum(rate(sqcdy_site_traffic_bytes{instance=~\"$server\"}[$__rate_interval])) * 60 / 1024 / 1024",
             "legendFormat": "Total MB/min",
             "refId": "A"
           }

@@ -73,7 +73,7 @@
         "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0},
         "targets": [
           {
-            "expr": "rate(sqcdy_site_requests_per_minute{instance=~\"$server\", domain=~\"$domain\"}[5m])",
+            "expr": "rate(sqcdy_site_requests_per_minute{instance=~\"$server\", domain=~\"$domain\"}[$__rate_interval])",
             "legendFormat": "{{domain}}",
             "refId": "A"
           }
@@ -90,7 +90,7 @@
         "gridPos": {"h": 10, "w": 12, "x": 0, "y": 10},
         "targets": [
           {
-            "expr": "rate(sqcdy_site_bytes_per_minute{instance=~\"$server\", domain=~\"$domain\"}[5m]) / 1024 / 1024",
+            "expr": "rate(sqcdy_site_bytes_per_minute{instance=~\"$server\", domain=~\"$domain\"}[$__rate_interval]) / 1024 / 1024",
             "legendFormat": "{{domain}}",
             "refId": "A"
           }
@@ -107,22 +107,22 @@
         "gridPos": {"h": 10, "w": 12, "x": 12, "y": 10},
         "targets": [
           {
-            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"2..\"}[5m]))",
+            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"2..\"}[$__rate_interval]))",
             "legendFormat": "2xx Success",
             "refId": "A"
           },
           {
-            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"3..\"}[5m]))",
+            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"3..\"}[$__rate_interval]))",
             "legendFormat": "3xx Redirect",
             "refId": "B"
           },
           {
-            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"4..\"}[5m]))",
+            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"4..\"}[$__rate_interval]))",
             "legendFormat": "4xx Client Error",
             "refId": "C"
           },
           {
-            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"5..\"}[5m]))",
+            "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"5..\"}[$__rate_interval]))",
             "legendFormat": "5xx Server Error",
             "refId": "D"
           }
@@ -154,12 +154,12 @@
         }
       },
       {
-        "title": "Error Rate %",
+        "title": "Error Rate % — 4xx & 5xx Responses",
         "type": "stat",
         "gridPos": {"h": 10, "w": 12, "x": 0, "y": 20},
         "targets": [
           {
-            "expr": "(100 * sum(rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"[45]..\"}[5m])) / sum(rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[5m]))) or vector(0)",
+            "expr": "(100 * sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"[45]..\"}[$__range])) / sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[$__range]))) or vector(0)",
             "refId": "A"
           }
         ],
