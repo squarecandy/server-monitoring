@@ -197,8 +197,8 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
         "targets": [
           {
-            "expr": "sum(rate(sqcdy_site_requests_total{instance=~\"$server\"}[$__rate_interval])) * 60",
-            "legendFormat": "Total Requests/min",
+            "expr": "sum by (instance) (rate(sqcdy_site_requests_total{instance=~\"$server\"}[$__rate_interval])) * 60",
+            "legendFormat": "{{instance}}",
             "refId": "A"
           }
         ],
@@ -214,8 +214,8 @@
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
         "targets": [
           {
-            "expr": "sum(rate(sqcdy_site_traffic_bytes{instance=~\"$server\"}[$__rate_interval])) * 60 / 1024 / 1024",
-            "legendFormat": "Total MB/min",
+            "expr": "sum by (instance) (rate(sqcdy_site_traffic_bytes{instance=~\"$server\"}[$__rate_interval])) * 60 / 1024 / 1024",
+            "legendFormat": "{{instance}}",
             "refId": "A"
           }
         ],
