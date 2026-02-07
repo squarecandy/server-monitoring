@@ -248,9 +248,9 @@ class UbuntuAdapter(PlatformAdapter):
             if sites_dir.exists() and sites_dir.is_dir():
                 # Ubuntu custom structure: /var/www/sites/USER/DOMAIN/
                 for user_dir in sites_dir.iterdir():
-                    if user_dir.is_dir():
+                    if user_dir.is_dir() and not user_dir.name.startswith('.'):
                         for domain_dir in user_dir.iterdir():
-                            if domain_dir.is_dir():
+                            if domain_dir.is_dir() and not domain_dir.name.startswith('.'):
                                 sites.append({
                                     'domain': domain_dir.name,
                                     'path': str(domain_dir),
