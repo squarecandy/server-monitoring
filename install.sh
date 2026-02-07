@@ -343,9 +343,10 @@ if [ "$LOKI_ENABLED" = true ]; then
         # GridPane extracts domain directly, no template needed
         DOMAIN_TEMPLATE=""
     elif [ "$SQCDY_PLATFORM" = "ubuntu-nginx" ]; then
-        ACCESS_LOG_PATH="/var/log/nginx/*access.log"
-        ERROR_LOG_PATH="/var/log/nginx/*error.log"
-        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>.+?)[-.]access\\.log$"
+        ACCESS_LOG_PATH="/var/www/sites/*/*/logs/*_access.log"
+        ERROR_LOG_PATH="/var/www/sites/*/*/logs/*_error.log"
+        # Ubuntu custom format: /var/www/sites/USER/DOMAIN/logs/DOMAIN_access.log
+        DOMAIN_REGEX="^/var/www/sites/[^/]+/(?P<domain>[^/]+)/logs/.*$"
         # Ubuntu extracts domain directly, no template needed
         DOMAIN_TEMPLATE=""
     else
