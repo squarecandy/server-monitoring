@@ -44,7 +44,7 @@
       {
         "title": "CPU Usage - All Users",
         "type": "timeseries",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0},
         "targets": [
           {
             "expr": "sqcdy_user_cpu_percent{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}",
@@ -72,7 +72,7 @@
       {
         "title": "Memory Usage (GB) - All Users",
         "type": "timeseries",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 10},
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0},
         "targets": [
           {
             "expr": "(sqcdy_user_memory_bytes{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"} / 1024 / 1024 / 1024)",
@@ -100,7 +100,7 @@
       {
         "title": "Process Count - All Users",
         "type": "timeseries",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 20},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 10},
         "targets": [
           {
             "expr": "sqcdy_user_process_count{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}",
@@ -120,7 +120,7 @@
       {
         "title": "User Resource Summary",
         "type": "table",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 30},
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 10},
         "targets": [
           {
             "expr": "max_over_time(sqcdy_user_cpu_percent{instance=~\"$server\", user=~\"$user\", user!~\"root|apache|psaadm|mysql|chrony|dbus|grafana.*|nginx|polkitd|plesk-s.*|sw-cp-s.*\"}[$__range])",

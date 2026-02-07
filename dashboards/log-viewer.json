@@ -62,7 +62,7 @@
     {
       "title": "Log Volume by Status Code",
       "type": "timeseries",
-      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0},
+      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
       "datasource": {
         "type": "loki",
         "uid": "grafanacloud-squarecandy-logs"
@@ -87,7 +87,7 @@
     {
       "title": "All Logs (Access + Error)",
       "type": "logs",
-      "gridPos": {"h": 34, "w": 24, "x": 0, "y": 10},
+      "gridPos": {"h": 34, "w": 24, "x": 0, "y": 6},
       "datasource": {
         "type": "loki",
         "uid": "grafanacloud-squarecandy-logs"

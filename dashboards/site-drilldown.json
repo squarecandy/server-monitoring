@@ -87,7 +87,7 @@
       {
         "title": "Traffic: MB per Minute",
         "type": "timeseries",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 10},
         "targets": [
           {
             "expr": "rate(sqcdy_site_bytes_per_minute{instance=~\"$server\", domain=~\"$domain\"}[5m]) / 1024 / 1024",
@@ -104,7 +104,7 @@
       {
         "title": "HTTP Status Codes Over Time",
         "type": "timeseries",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 22},
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 10},
         "targets": [
           {
             "expr": "sum by (status) (rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"2..\"}[5m]))",
@@ -156,7 +156,7 @@
       {
         "title": "Error Rate %",
         "type": "stat",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 22},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 20},
         "targets": [
           {
             "expr": "(100 * sum(rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"[45]..\"}[5m])) / sum(rate(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[5m]))) or vector(0)",
@@ -188,7 +188,7 @@
       {
         "title": "Top Error URLs (4xx/5xx)",
         "type": "table",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 22},
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 20},
         "targets": [
           {
             "expr": "topk(10, sum by (domain, url) (increase(sqcdy_site_top_url_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range])))",
@@ -265,7 +265,7 @@
       {
         "title": "Top IPs",
         "type": "table",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 24},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 30},
         "targets": [
           {
             "expr": "topk(20, sum by (ip) (sqcdy_site_top_ip_requests{instance=~\"$server\", domain=~\"$domain\"}))",
@@ -315,7 +315,7 @@
       {
         "title": "Top User Agents",
         "type": "table",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 24},
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 30},
         "targets": [
           {
             "expr": "topk(20, sum by (user_agent) (sqcdy_site_top_user_agent_requests{instance=~\"$server\", domain=~\"$domain\"}))",
@@ -365,7 +365,7 @@
       {
         "title": "Top URLs",
         "type": "table",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 24},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 40},
         "fieldConfig": {
           "defaults": {
             "decimals": 0
@@ -442,7 +442,7 @@
       {
         "title": "HTTP Status Codes",
         "type": "piechart",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 32},
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 40},
         "targets": [
           {
             "expr": "sum by (status) (sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"})",
