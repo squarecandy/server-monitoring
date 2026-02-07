@@ -105,37 +105,27 @@ class LogAnalyzer:
                         log_files[domain].append(str(log_file))
         
         else:
-            # Generic Ubuntu: scan for custom site structure
-            # Pattern: /var/www/sites/LINUXUSER/DOMAIN/logs/*.log
+            # Ubuntu custom: /var/www/sites/USER/DOMAIN/logs/*.log
+            # This is the ONLY supported Ubuntu structure - fail if it doesn't exist
             sites_path = Path('/var/www/sites')
-            if sites_path.exists():
-                for user_dir in sites_path.iterdir():
-                    if not user_dir.is_dir():
-                        continue
-                    # Each user can have multiple domain directories
-                    for domain_dir in user_dir.iterdir():
-                        if not domain_dir.is_dir():
-                            continue
-                        domain = domain_dir.name
-                        logs_dir = domain_dir / 'logs'
-                        if logs_dir.exists():
-                            for log_file in logs_dir.glob('*access*.log'):
-                                if log_file.is_file() and log_file.stat().st_size > 0:
-                                    log_files[domain].append(str(log_file))
+            if not sites_path.exists():
+                print(f"ERROR: Unsupported platform '{self.platform}' - /var/www/sites structure not found", file=sys.stderr)
+                print("Supported platforms: plesk, gridpane, ubuntu-nginx with /var/www/sites/USER/DOMAIN/logs/", file=sys.stderr)
+                return log_files
             
-            # Fallback: also check standard /var/log/nginx location
-            log_path = Path(self.platform_info.get('log_path', '/var/log/nginx'))
-            if log_path.exists():
-                for log_file in log_path.glob('*access*.log'):
-                    if not log_file.is_file():
+            for user_dir in sites_path.iterdir():
+                if not user_dir.is_dir() or user_dir.name.startswith('.'):
+                    continue
+                # Each user can have multiple domain directories
+                for domain_dir in user_dir.iterdir():
+                    if not domain_dir.is_dir() or domain_dir.name.startswith('.'):
                         continue
-                    # Skip generic access.log (system-wide log)
-                    if log_file.name == 'access.log':
-                        continue
-                    # Try to extract domain from filename
-                    domain = log_file.name.split('-')[0].replace('access.log', '').replace('.access.log', '').strip('.')
-                    if domain:
-                        log_files[domain].append(str(log_file))
+                    domain = domain_dir.name
+                    logs_dir = domain_dir / 'logs'
+                    if logs_dir.exists():
+                        for log_file in logs_dir.glob('*access*.log'):
+                            if log_file.is_file() and log_file.stat().st_size > 0:
+                                log_files[domain].append(str(log_file))
         
         return log_files
     

@@ -350,11 +350,9 @@ if [ "$LOKI_ENABLED" = true ]; then
         # Ubuntu extracts domain directly, no template needed
         DOMAIN_TEMPLATE=""
     else
-        # Default fallback
-        ACCESS_LOG_PATH="/var/log/nginx/*access.log"
-        ERROR_LOG_PATH="/var/log/nginx/*error.log"
-        DOMAIN_REGEX="^/var/log/nginx/(?P<domain>.+?)[-.]access\\.log$"
-        DOMAIN_TEMPLATE=""
+        echo "❌ ERROR: Unsupported platform: $SQCDY_PLATFORM"
+        echo "Supported platforms: plesk, gridpane, ubuntu-nginx"
+        exit 1
     fi
 
 cat >> /etc/grafana-agent.yaml <<LOKIEOF

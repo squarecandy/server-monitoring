@@ -47,41 +47,20 @@ detect_platform() {
         PLATFORM="ubuntu-nginx"
         PLATFORM_VERSION=$(grep DISTRIB_RELEASE /etc/lsb-release 2>/dev/null | cut -d= -f2 || echo "unknown")
         SITE_PATH="/var/www"
-        LOG_PATH="/var/log/nginx"
+        # Check for custom /var/www/sites/USER/DOMAIN/logs structure
+        if [ -d "/var/www/sites" ] && [ "$(find /var/www/sites -mindepth 2 -maxdepth 2 -type d -name logs 2>/dev/null | head -1)" ]; then
+            LOG_PATH="/var/www/sites"
+        else
+            LOG_PATH="/var/log/nginx"
+        fi
         USER_PATTERN="www-data"
         [ "$QUIET" != "true" ] && echo -e "${GREEN}✓ Detected: Ubuntu with Nginx${NC}"
         return 0
     fi
     
-    # Check for custom Ubuntu with apache
-    if [ -f /etc/apache2/apache2.conf ] && [ -f /etc/lsb-release ]; then
-        PLATFORM="ubuntu-apache"
-        PLATFORM_VERSION=$(grep DISTRIB_RELEASE /etc/lsb-release 2>/dev/null | cut -d= -f2 || echo "unknown")
-        SITE_PATH="/var/www"
-        LOG_PATH="/var/log/apache2"
-        USER_PATTERN="www-data"
-        [ "$QUIET" != "true" ] && echo -e "${GREEN}✓ Detected: Ubuntu with Apache${NC}"
-        return 0
-    fi
-    
-    # Generic Linux fallback
-    if [ -f /etc/os-release ]; then
-        PLATFORM="generic-linux"
-        PLATFORM_VERSION=$(grep VERSION_ID /etc/os-release 2>/dev/null | cut -d= -f2 | tr -d '"' || echo "unknown")
-        SITE_PATH="/var/www"
-        LOG_PATH="/var/log"
-        USER_PATTERN="www-data|apache|nginx"
-        [ "$QUIET" != "true" ] && echo -e "${YELLOW}⚠ Generic Linux detected${NC}"
-        return 0
-    fi
-    
-    # Absolute fallback
-    PLATFORM="unknown"
-    PLATFORM_VERSION="unknown"
-    SITE_PATH="/var/www"
-    LOG_PATH="/var/log"
-    USER_PATTERN="www-data"
-    [ "$QUIET" != "true" ] && echo -e "${RED}✗ Could not detect platform${NC}"
+    # Unsupported platform
+    [ "$QUIET" != "true" ] && echo -e "${RED}✗ Unsupported platform detected${NC}"
+    [ "$QUIET" != "true" ] && echo -e "${RED}Supported platforms: Plesk, GridPane, Ubuntu with Nginx (/var/www/sites structure)${NC}"
     return 1
 }
 
@@ -112,9 +91,11 @@ get_site_list() {
             # GridPane sites are directories in /var/www
             find /var/www -maxdepth 1 -type d ! -name "www" ! -name "html" -exec basename {} \; 2>/dev/null | grep -v "^$"
             ;;
-        ubuntu-nginx|ubuntu-apache|generic-linux)
-            # Look for directories that might be sites
-            find ${SITE_PATH} -maxdepth 1 -type d ! -name "www" ! -name "html" -exec basename {} \; 2>/dev/null | grep -v "^$"
+        ubuntu-nginx)
+            # Ubuntu custom sites are in /var/www/sites/USER/DOMAIN
+            if [ -d /var/www/sites ]; then
+                find /var/www/sites/*/*/ -maxdepth 0 -type d -exec basename {} \; 2>/dev/null | grep -v "^$"
+            fi
             ;;
     esac
 }
@@ -130,12 +111,17 @@ get_log_paths() {
             echo "Error logs: /var/log/nginx/*error.log"
             ;;
         ubuntu-nginx)
-            echo "Access logs: /var/log/nginx/*access.log"
-            echo "Error logs: /var/log/nginx/*error.log"
+            if [ "$LOG_PATH" = "/var/www/sites" ]; then
+                echo "Access logs: /var/www/sites/*/*/logs/*_access.log"
+                echo "Error logs: /var/www/sites/*/*/logs/*_error.log"
+            else
+                echo "ERROR: Ubuntu detected but /var/www/sites structure not found"
+                return 1
+            fi
             ;;
-        ubuntu-apache)
-            echo "Access logs: /var/log/apache2/*access.log"
-            echo "Error logs: /var/log/apache2/*error.log"
+        *)
+            echo "ERROR: Unsupported platform"
+            return 1
             ;;
     esac
 }
