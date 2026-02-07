@@ -243,6 +243,22 @@ class UbuntuAdapter(PlatformAdapter):
         site_path = Path(self.platform_info.get('site_path', '/var/www'))
         
         try:
+            # Check for custom /var/www/sites/USER/DOMAIN structure first
+            sites_dir = site_path / 'sites'
+            if sites_dir.exists() and sites_dir.is_dir():
+                # Ubuntu custom structure: /var/www/sites/USER/DOMAIN/
+                for user_dir in sites_dir.iterdir():
+                    if user_dir.is_dir():
+                        for domain_dir in user_dir.iterdir():
+                            if domain_dir.is_dir():
+                                sites.append({
+                                    'domain': domain_dir.name,
+                                    'path': str(domain_dir),
+                                    'user': user_dir.name
+                                })
+                if sites:
+                    return sites
+            
             # Look for nginx/apache vhost configs to find sites
             sites_from_config = self._get_sites_from_config()
             if sites_from_config:
@@ -250,7 +266,7 @@ class UbuntuAdapter(PlatformAdapter):
             
             # Fallback: scan directories
             for site_dir in site_path.iterdir():
-                if site_dir.is_dir() and site_dir.name not in ['html', 'default']:
+                if site_dir.is_dir() and site_dir.name not in ['html', 'default', 'sites']:
                     sites.append({
                         'domain': site_dir.name,
                         'path': str(site_dir),
