@@ -251,6 +251,9 @@ class UbuntuAdapter(PlatformAdapter):
                     if user_dir.is_dir() and not user_dir.name.startswith('.'):
                         for domain_dir in user_dir.iterdir():
                             if domain_dir.is_dir() and not domain_dir.name.startswith('.'):
+                                # Skip special directories that are not sites
+                                if domain_dir.name in ['logs', 'wordpress-backups']:
+                                    continue
                                 sites.append({
                                     'domain': domain_dir.name,
                                     'path': str(domain_dir),

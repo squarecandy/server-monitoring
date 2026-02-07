@@ -127,6 +127,9 @@ class LogAnalyzer:
                 for domain_dir in user_dir.iterdir():
                     if not domain_dir.is_dir() or domain_dir.name.startswith('.'):
                         continue
+                    # Skip special directories that are not sites
+                    if domain_dir.name in ['logs', 'wordpress-backups']:
+                        continue
                     domain = domain_dir.name
                     logs_dir = domain_dir / 'logs'
                     if logs_dir.exists():
