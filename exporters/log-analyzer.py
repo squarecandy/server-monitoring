@@ -33,12 +33,14 @@ UBUNTU_CLOUDFLARE_LOG_PATTERN = re.compile(
     r'"(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
 )
 
-# GridPane nginx log format variations:
+# GridPane nginx log format variations (with/without Fortress):
 # Format 1: [TIME] IP RT - VHOST "METHOD URL PROTOCOL" STATUS SIZE RT "REFERRER" "USER_AGENT"
 # Format 2: [TIME] IP - CACHE_STATUS VHOST "METHOD URL PROTOCOL" STATUS SIZE RT "REFERRER" "UA"
 # Format 3: [TIME] IP RT CACHE_STATUS VHOST "METHOD URL PROTOCOL" STATUS SIZE RT "REFERRER" "UA"
+# Format 4: [TIME] IP RT CACHE_STATUS - "METHOD URL PROTOCOL" STATUS SIZE RT "REFERRER" "UA" (HTTP/3)
 GRIDPANE_LOG_PATTERN = re.compile(
-    r'\[(?P<time>[^\]]+)\] (?P<ip>[\da-f:.]+) (?:[\d.]+ )?(?:- )?\S+ \S+ '
+    r'\[(?P<time>[^\]]+)\] (?P<ip>[\da-f:.]+) '
+    r'(?:[\d.]+ )?(?:\S+ )?(?:\S+ )?'
     r'"(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+) '
     r'[\d.]+ "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
 )
