@@ -101,23 +101,19 @@ for service in sqcdy-site-metrics sqcdy-user-metrics sqcdy-log-analyzer; do
     ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO systemctl restart $service" 2>/dev/null && echo "  ✓ $service restarted" || true
 done
 
-# Restart grafana-agent and verify Loki targets loaded
+# Restart grafana-agent
 echo "  Restarting grafana-agent..."
 ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO systemctl restart grafana-agent" 2>/dev/null
-sleep 5
 
-# Verify both access-logs and error-logs targets are loaded
-ACCESS_LOADED=$(ssh "${REMOTE_USER}@${REMOTE_HOST}" "journalctl -u grafana-agent --since '10 seconds ago' 2>/dev/null | grep -c 'Adding target.*access-logs' || echo 0" | tr -d '\n\r')
-ERROR_LOADED=$(ssh "${REMOTE_USER}@${REMOTE_HOST}" "journalctl -u grafana-agent --since '10 seconds ago' 2>/dev/null | grep -c 'Adding target.*error-logs' || echo 0" | tr -d '\n\r')
-
-if [ "$ACCESS_LOADED" -eq 0 ] || [ "$ERROR_LOADED" -eq 0 ]; then
-    echo "  ⚠ Not all Loki targets loaded, restarting grafana-agent again..."
-    ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO systemctl restart grafana-agent" 2>/dev/null
-    sleep 5
-    echo "  ✓ grafana-agent restarted"
-else
-    echo "  ✓ grafana-agent restarted (access-logs and error-logs loaded)"
-fi
+# Wait for agent to fully start (check status instead of log parsing)
+for i in {1..10}; do
+    if ssh "${REMOTE_USER}@${REMOTE_HOST}" "systemctl is-active --quiet grafana-agent" 2>/dev/null; then
+        echo "  ✓ grafana-agent started"
+        break
+    fi
+    [ $i -eq 10 ] && echo "  ⚠ grafana-agent taking longer than expected to start"
+    sleep 1
+done
 echo ""
 
 # Clean up remote temp directory
