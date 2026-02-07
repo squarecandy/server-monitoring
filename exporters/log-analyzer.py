@@ -26,6 +26,13 @@ NGINX_LOG_PATTERN = re.compile(
     r'"(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
 )
 
+# Ubuntu custom nginx with Cloudflare: IP1 - IP2 - IP3 [TIME] "REQUEST" STATUS SIZE "REFERRER" "UA"
+UBUNTU_CLOUDFLARE_LOG_PATTERN = re.compile(
+    r'(?P<ip>[\da-f:\.]+) - [\da-f:\.]+ - [\da-f:\.]+ \[(?P<time>[^\]]+)\] '
+    r'"(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+) '
+    r'"(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
+)
+
 # GridPane nginx log format: [TIME] IP RESPONSE_TIME - VHOST "METHOD URL PROTOCOL" STATUS SIZE RESPONSE_TIME "REFERRER" "USER_AGENT"
 GRIDPANE_LOG_PATTERN = re.compile(
     r'\[(?P<time>[^\]]+)\] (?P<ip>[\d.]+) [\d.]+ - \S+ '
@@ -137,6 +144,11 @@ class LogAnalyzer:
             if match:
                 data = match.groupdict()
                 return data
+        
+        # Try Ubuntu Cloudflare format (3 IPs)
+        match = UBUNTU_CLOUDFLARE_LOG_PATTERN.match(line)
+        if match:
+            return match.groupdict()
         
         # Try standard nginx format
         match = NGINX_LOG_PATTERN.match(line)
