@@ -392,9 +392,13 @@ ${DOMAIN_TEMPLATE}
                 template: '{{ .status_first_digit }}xx'
             - labels:
                 status_range:
+            # Extract user agent for filtering
+            - regex:
+                expression: '"(?P<user_agent>[^"]*)"$'
             # Drop monitoring/bot traffic to reduce noise and costs
             - drop:
-                expression: '.*(UptimeRobot|neat\\.software\\.Ping|Googlebot|bingbot|monitoring).*'
+                source: user_agent
+                expression: '(?i)(UptimeRobot|neat\.software|Googlebot|bingbot|Pingdom|StatusCake|monitoring|bot)'
             # Drop GridPane system domains (only for GridPane platform)
             - drop:
                 source: filename
