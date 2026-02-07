@@ -330,20 +330,30 @@ if [ "$LOKI_ENABLED" = true ]; then
         # /var/www/vhosts/example.com/logs/access_ssl_log → main_domain=example.com, sub_dir=""
         # /var/www/vhosts/example.com/logs/app.example.com/access_ssl_log → main_domain=example.com, sub_dir=app.example.com
         DOMAIN_REGEX="^/var/www/vhosts/(?P<main_domain>[^/]+)/logs/(?:(?P<sub_dir>[^/]+)/)?.*$"
+        # Plesk needs template stage to handle subdomain extraction
+        DOMAIN_TEMPLATE='            # Set domain to subdomain if present, otherwise use main_domain
+            - template:
+                source: domain
+                template: '\''{{ if .sub_dir }}{{ .sub_dir }}{{ else }}{{ .main_domain }}{{ end }}'\'''
     elif [ "$SQCDY_PLATFORM" = "gridpane" ]; then
         ACCESS_LOG_PATH="/var/log/nginx/*access.log"
         ERROR_LOG_PATH="/var/log/nginx/*error.log"
         # GridPane log format: domain.com.access.log - extract full domain
         DOMAIN_REGEX="^/var/log/nginx/(?P<domain>.+?)[-.]access\\.log$"
+        # GridPane extracts domain directly, no template needed
+        DOMAIN_TEMPLATE=""
     elif [ "$SQCDY_PLATFORM" = "ubuntu-nginx" ]; then
         ACCESS_LOG_PATH="/var/log/nginx/*access.log"
         ERROR_LOG_PATH="/var/log/nginx/*error.log"
         DOMAIN_REGEX="^/var/log/nginx/(?P<domain>.+?)[-.]access\\.log$"
+        # Ubuntu extracts domain directly, no template needed
+        DOMAIN_TEMPLATE=""
     else
         # Default fallback
         ACCESS_LOG_PATH="/var/log/nginx/*access.log"
         ERROR_LOG_PATH="/var/log/nginx/*error.log"
         DOMAIN_REGEX="^/var/log/nginx/(?P<domain>.+?)[-.]access\\.log$"
+        DOMAIN_TEMPLATE=""
     fi
 
 cat >> /etc/grafana-agent.yaml <<LOKIEOF
@@ -368,14 +378,11 @@ logs:
                 instance: $(hostname)
                 __path__: ${ACCESS_LOG_PATH}
           pipeline_stages:
-            # Extract main domain and subdomain directory from filename
+            # Extract domain from filename
             - regex:
                 source: filename
                 expression: '${DOMAIN_REGEX}'
-            # Set domain to subdomain if present, otherwise use main_domain
-            - template:
-                source: domain
-                template: '{{ if .sub_dir }}{{ .sub_dir }}{{ else }}{{ .main_domain }}{{ end }}'
+${DOMAIN_TEMPLATE}
             - labels:
                 domain:
             # Extract status code and map to range (2xx, 3xx, 4xx, 5xx)
@@ -405,14 +412,11 @@ logs:
                 __path__: ${ERROR_LOG_PATH}
                 status_range: error
           pipeline_stages:
-            # Extract main domain and subdomain directory from filename
+            # Extract domain from filename
             - regex:
                 source: filename
                 expression: '${DOMAIN_REGEX}'
-            # Set domain to subdomain if present, otherwise use main_domain
-            - template:
-                source: domain
-                template: '{{ if .sub_dir }}{{ .sub_dir }}{{ else }}{{ .main_domain }}{{ end }}'
+${DOMAIN_TEMPLATE}
             - labels:
                 domain:
             - regex:

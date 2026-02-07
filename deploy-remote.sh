@@ -88,6 +88,38 @@ ssh "${REMOTE_USER}@${REMOTE_HOST}" "cd $REMOTE_TEMP && $SUDO bash install.sh"
 echo "========================================"
 echo ""
 
+# Copy updated exporters (in case this is an update, not fresh install)
+echo "Updating exporters..."
+ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO cp $REMOTE_TEMP/exporters/*.py $REMOTE_TEMP/exporters/*.sh $INSTALL_DIR/exporters/ 2>/dev/null || true"
+ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO chmod +x $INSTALL_DIR/exporters/*.py $INSTALL_DIR/exporters/*.sh"
+echo "✓ Exporters updated"
+echo ""
+
+# Restart services to pick up changes
+echo "Restarting services..."
+for service in sqcdy-site-metrics sqcdy-user-metrics sqcdy-log-analyzer; do
+    ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO systemctl restart $service" 2>/dev/null && echo "  ✓ $service restarted" || true
+done
+
+# Restart grafana-agent and verify Loki targets loaded
+echo "  Restarting grafana-agent..."
+ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO systemctl restart grafana-agent" 2>/dev/null
+sleep 5
+
+# Verify both access-logs and error-logs targets are loaded
+ACCESS_LOADED=$(ssh "${REMOTE_USER}@${REMOTE_HOST}" "journalctl -u grafana-agent --since '10 seconds ago' | grep -c 'Adding target.*access-logs' || echo 0")
+ERROR_LOADED=$(ssh "${REMOTE_USER}@${REMOTE_HOST}" "journalctl -u grafana-agent --since '10 seconds ago' | grep -c 'Adding target.*error-logs' || echo 0")
+
+if [ "$ACCESS_LOADED" -eq 0 ] || [ "$ERROR_LOADED" -eq 0 ]; then
+    echo "  ⚠ Not all Loki targets loaded, restarting grafana-agent again..."
+    ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO systemctl restart grafana-agent" 2>/dev/null
+    sleep 5
+    echo "  ✓ grafana-agent restarted"
+else
+    echo "  ✓ grafana-agent restarted (access-logs and error-logs loaded)"
+fi
+echo ""
+
 # Clean up remote temp directory
 echo "Cleaning up..."
 ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO rm -rf $REMOTE_TEMP"
