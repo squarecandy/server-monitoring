@@ -46,3 +46,4 @@ htmlcov/
 # Local config overrides
 config/local.yaml
 config/*.local.*
+deploy-all.sh
