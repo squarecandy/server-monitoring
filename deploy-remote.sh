@@ -107,8 +107,8 @@ ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO systemctl restart grafana-agent" 2>/d
 sleep 5
 
 # Verify both access-logs and error-logs targets are loaded
-ACCESS_LOADED=$(ssh "${REMOTE_USER}@${REMOTE_HOST}" "journalctl -u grafana-agent --since '10 seconds ago' | grep -c 'Adding target.*access-logs' || echo 0")
-ERROR_LOADED=$(ssh "${REMOTE_USER}@${REMOTE_HOST}" "journalctl -u grafana-agent --since '10 seconds ago' | grep -c 'Adding target.*error-logs' || echo 0")
+ACCESS_LOADED=$(ssh "${REMOTE_USER}@${REMOTE_HOST}" "journalctl -u grafana-agent --since '10 seconds ago' 2>/dev/null | grep -c 'Adding target.*access-logs' || echo 0" | tr -d '\n\r')
+ERROR_LOADED=$(ssh "${REMOTE_USER}@${REMOTE_HOST}" "journalctl -u grafana-agent --since '10 seconds ago' 2>/dev/null | grep -c 'Adding target.*error-logs' || echo 0" | tr -d '\n\r')
 
 if [ "$ACCESS_LOADED" -eq 0 ] || [ "$ERROR_LOADED" -eq 0 ]; then
     echo "  ⚠ Not all Loki targets loaded, restarting grafana-agent again..."
