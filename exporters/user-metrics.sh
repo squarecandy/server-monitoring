@@ -26,7 +26,7 @@ get_user_metrics() {
     ps -eo user:32,%cpu,%mem,rss,comm --no-headers | awk '
     BEGIN {
         # System users to exclude
-        split("root apache nginx www-data mysql mariadb postgres chrony dbus polkitd grafana prometheus postfix dovecot named bind psaadm psacln daemon bin sys sync games man lp mail news uucp proxy backup list irc gnats nobody systemd rpc messagebus redis syslog vector", excluded, " ")
+        split("root apache nginx www-data mysql mariadb postgres chrony dbus polkitd grafana prometheus postfix dovecot named bind psaadm psacln daemon bin sys sync games man lp mail news uucp proxy backup list irc gnats nobody systemd rpc messagebus redis syslog vector _rpc sshd uuidd", excluded, " ")
         for (i in excluded) exclude[excluded[i]] = 1
     }
     {
