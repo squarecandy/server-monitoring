@@ -197,7 +197,7 @@
         "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
         "targets": [
           {
-            "expr": "sum(rate(sqcdy_site_requests_per_minute{instance=~\"$server.*\"}[5m]))",
+            "expr": "sum(sqcdy_site_requests_per_minute{instance=~\"$server\"})",
             "legendFormat": "Total Requests/min",
             "refId": "A"
           }
@@ -214,7 +214,7 @@
         "gridPos": {"h": 8, "w": 24, "x": 0, "y": 32},
         "targets": [
           {
-            "expr": "sum(rate(sqcdy_site_bytes_per_minute{instance=~\"$server.*\"}[5m])) / 1024 / 1024",
+            "expr": "sum(sqcdy_site_bytes_per_minute{instance=~\"$server\"}) / 1024 / 1024",
             "legendFormat": "Total MB/min",
             "refId": "A"
           }
