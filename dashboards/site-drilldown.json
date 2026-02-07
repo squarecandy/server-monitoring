@@ -186,12 +186,12 @@
         }
       },
       {
-        "title": "Top Error URLs (4xx/5xx)",
+        "title": "Top URLs by Request Count",
         "type": "table",
         "gridPos": {"h": 10, "w": 12, "x": 12, "y": 20},
         "targets": [
           {
-            "expr": "topk(10, sum by (domain, url) (increase(sqcdy_site_top_url_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range])))",
+            "expr": "topk(10, sum by (domain, url) (increase(sqcdy_site_top_url_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range])) > 0)",
             "format": "table",
             "refId": "A"
           }
@@ -268,7 +268,7 @@
         "gridPos": {"h": 10, "w": 12, "x": 0, "y": 30},
         "targets": [
           {
-            "expr": "topk(20, sum by (ip) (sqcdy_site_top_ip_requests{instance=~\"$server\", domain=~\"$domain\"}))",
+            "expr": "topk(20, sum by (ip) (increase(sqcdy_site_top_ip_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range])) > 0)",
             "format": "table",
             "refId": "A"
           }
@@ -318,7 +318,7 @@
         "gridPos": {"h": 10, "w": 12, "x": 12, "y": 30},
         "targets": [
           {
-            "expr": "topk(20, sum by (user_agent) (sqcdy_site_top_user_agent_requests{instance=~\"$server\", domain=~\"$domain\"}))",
+            "expr": "topk(20, sum by (user_agent) (increase(sqcdy_site_top_user_agent_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range])) > 0)",
             "format": "table",
             "refId": "A"
           }
@@ -363,86 +363,9 @@
         ]
       },
       {
-        "title": "Top URLs",
-        "type": "table",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 40},
-        "fieldConfig": {
-          "defaults": {
-            "decimals": 0
-          },
-          "overrides": [
-            {
-              "matcher": {"id": "byName", "options": "URL"},
-              "properties": [
-                {
-                  "id": "links",
-                  "value": [
-                    {
-                      "title": "Open URL",
-                      "url": "https://${__data.fields.domain}${__data.fields.url}",
-                      "targetBlank": true
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        "targets": [
-          {
-            "expr": "topk(20, sum by (domain, url) (sqcdy_site_top_url_requests{instance=~\"$server\", domain=~\"$domain\"}))",
-            "format": "table",
-            "refId": "A"
-          }
-        ],
-        "transformations": [
-          {
-            "id": "groupBy",
-            "options": {
-              "fields": {
-                "Value": {
-                  "aggregations": ["lastNotNull"],
-                  "operation": "aggregate"
-                },
-                "domain": {
-                  "aggregations": [],
-                  "operation": "groupby"
-                },
-                "url": {
-                  "aggregations": [],
-                  "operation": "groupby"
-                }
-              }
-            }
-          },
-          {
-            "id": "organize",
-            "options": {
-              "excludeByName": {"Time": true, "__name__": true, "instance": true, "job": true},
-              "renameByName": {
-                "domain": "Domain",
-                "url": "URL",
-                "Value (lastNotNull)": "Requests"
-              }
-            }
-          },
-          {
-            "id": "sortBy",
-            "options": {
-              "sort": [
-                {
-                  "field": "Requests",
-                  "desc": true
-                }
-              ]
-            }
-          }
-        ]
-      },
-      {
         "title": "HTTP Status Codes",
         "type": "piechart",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 40},
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 40},
         "targets": [
           {
             "expr": "sum by (status) (sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"})",
