@@ -47,8 +47,8 @@ detect_platform() {
         PLATFORM="ubuntu-nginx"
         PLATFORM_VERSION=$(grep DISTRIB_RELEASE /etc/lsb-release 2>/dev/null | cut -d= -f2 || echo "unknown")
         SITE_PATH="/var/www"
-        # Check for custom /var/www/sites/USER/DOMAIN/logs structure
-        if [ -d "/var/www/sites" ] && [ "$(find /var/www/sites -mindepth 2 -maxdepth 2 -type d -name logs 2>/dev/null | head -1)" ]; then
+        # Check for custom /var/www/sites/USER/DOMAIN/logs structure (3 levels deep)
+        if [ -d "/var/www/sites" ] && [ "$(find /var/www/sites -mindepth 3 -maxdepth 3 -type d -name logs 2>/dev/null | head -1)" ]; then
             LOG_PATH="/var/www/sites"
         else
             LOG_PATH="/var/log/nginx"
