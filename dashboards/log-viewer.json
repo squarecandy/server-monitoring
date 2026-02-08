@@ -4,8 +4,8 @@
   "tags": ["squarecandy", "logs"],
   "links": [
     {"title": "Server Overview", "type": "link", "url": "/d/sqcdy-server-overview", "keepTime": true, "includeVars": true, "icon": "cloud"},
-    {"title": "Site Metrics", "type": "link", "url": "/d/sqcdy-site-drilldown", "keepTime": true, "includeVars": true, "icon": "dashboard"},
     {"title": "User Metrics", "type": "link", "url": "/d/sqcdy-user-metrics", "keepTime": true, "includeVars": true, "icon": "info"},
+	{"title": "Site Metrics", "type": "link", "url": "/d/sqcdy-site-drilldown", "keepTime": true, "includeVars": true, "icon": "dashboard"},
     {"title": "Log Viewer", "type": "link", "url": "/d/sqcdy-log-viewer", "keepTime": true, "includeVars": true, "icon": "doc"}
   ],
   "timezone": "browser",
@@ -35,7 +35,8 @@
         "current": {},
         "refresh": 2,
         "includeAll": true,
-        "multi": true,
+        "multi": false,
+        "allValue": ".*",
         "sort": 1
       },
       {
@@ -55,6 +56,15 @@
         "multi": true,
         "allValue": ".*",
         "sort": 1
+      },
+      {
+        "name": "search",
+        "type": "textbox",
+        "label": "Search",
+        "description": "Filter logs by text content (case-insensitive regex)",
+        "current": {
+          "value": ""
+        }
       }
     ]
   },
@@ -62,7 +72,7 @@
     {
       "title": "Log Volume by Status Code",
       "type": "timeseries",
-      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
+      "gridPos": {"h": 5, "w": 12, "x": 0, "y": 0},
       "datasource": {
         "type": "loki",
         "uid": "grafanacloud-squarecandy-logs"
@@ -85,16 +95,110 @@
       }
     },
     {
-      "title": "All Logs (Access + Error)",
-      "type": "logs",
-      "gridPos": {"h": 34, "w": 24, "x": 0, "y": 6},
+      "title": "Matching Log Count",
+      "type": "stat",
+      "gridPos": {"h": 5, "w": 12, "x": 12, "y": 0},
       "datasource": {
         "type": "loki",
         "uid": "grafanacloud-squarecandy-logs"
       },
       "targets": [
         {
-          "expr": "{job=~\"access-logs|error-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=~\"$status\"}",
+          "expr": "sum(count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=\"2xx\"} |~ \"(?i)$search\" [$__range]))",
+          "legendFormat": "2xx",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=\"3xx\"} |~ \"(?i)$search\" [$__range]))",
+          "legendFormat": "3xx",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=\"4xx\"} |~ \"(?i)$search\" [$__range]))",
+          "legendFormat": "4xx",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(count_over_time({job=\"access-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=\"5xx\"} |~ \"(?i)$search\" [$__range]))",
+          "legendFormat": "5xx",
+          "refId": "D"
+        },
+        {
+          "expr": "sum(count_over_time({job=\"error-logs\",instance=~\"$server\",domain=~\"$domain\"} |~ \"(?i)$search\" [$__range]))",
+          "legendFormat": "Error",
+          "refId": "E"
+        },
+        {
+          "expr": "sum(count_over_time({job=~\"access-logs|error-logs\",instance=~\"$server\",domain=~\"$domain\"} |~ \"(?i)$search\" [$__range]))",
+          "legendFormat": "Total",
+          "refId": "F"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "red"},
+              {"value": 1, "color": "green"}
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "2xx"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "3xx"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "4xx"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "5xx"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Error"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Total"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "text"}}]
+          }
+        ]
+      },
+      "options": {
+        "graphMode": "none",
+        "colorMode": "value",
+        "textMode": "value_and_name",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"]
+        },
+        "text": {
+          "titleSize": 16,
+          "valueSize": 28
+        }
+      }
+    },
+    {
+      "title": "All Logs (Access + Error)",
+      "type": "logs",
+      "gridPos": {"h": 35, "w": 24, "x": 0, "y": 5},
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-squarecandy-logs"
+      },
+      "targets": [
+        {
+          "expr": "{job=~\"access-logs|error-logs\",instance=~\"$server\",domain=~\"$domain\",status_range=~\"$status\"} |~ \"(?i)$search\"",
           "refId": "A"
         }
       ],

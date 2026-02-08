@@ -4,8 +4,8 @@
   "tags": ["squarecandy", "users", "linux"],
   "links": [
     {"title": "Server Overview", "type": "link", "url": "/d/sqcdy-server-overview", "keepTime": true, "includeVars": true, "icon": "cloud"},
-    {"title": "Site Metrics", "type": "link", "url": "/d/sqcdy-site-drilldown", "keepTime": true, "includeVars": true, "icon": "dashboard"},
     {"title": "User Metrics", "type": "link", "url": "/d/sqcdy-user-metrics", "keepTime": true, "includeVars": true, "icon": "info"},
+	{"title": "Site Metrics", "type": "link", "url": "/d/sqcdy-site-drilldown", "keepTime": true, "includeVars": true, "icon": "dashboard"},
     {"title": "Log Viewer", "type": "link", "url": "/d/sqcdy-log-viewer", "keepTime": true, "includeVars": true, "icon": "doc"}
   ],
     "timezone": "browser",

@@ -4,8 +4,8 @@
   "tags": ["squarecandy", "sites"],
   "links": [
     {"title": "Server Overview", "type": "link", "url": "/d/sqcdy-server-overview", "keepTime": true, "includeVars": true, "icon": "cloud"},
-    {"title": "Site Metrics", "type": "link", "url": "/d/sqcdy-site-drilldown", "keepTime": true, "includeVars": true, "icon": "dashboard"},
     {"title": "User Metrics", "type": "link", "url": "/d/sqcdy-user-metrics", "keepTime": true, "includeVars": true, "icon": "info"},
+	{"title": "Site Metrics", "type": "link", "url": "/d/sqcdy-site-drilldown", "keepTime": true, "includeVars": true, "icon": "dashboard"},
     {"title": "Log Viewer", "type": "link", "url": "/d/sqcdy-log-viewer", "keepTime": true, "includeVars": true, "icon": "doc"}
   ],
     "timezone": "browser",
@@ -35,7 +35,8 @@
           "current": {},
           "refresh": 1,
           "includeAll": true,
-          "multi": true,
+          "multi": false,
+          "allValue": ".*",
           "sort": 1
         }
       ]
@@ -154,35 +155,87 @@
         }
       },
       {
-        "title": "Error Rate % — 4xx & 5xx Responses",
+        "title": "Status Code Distribution %",
         "type": "stat",
         "gridPos": {"h": 10, "w": 12, "x": 0, "y": 20},
         "targets": [
           {
-            "expr": "(100 * sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"[45]..\"}[$__range])) / sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[$__range]))) or vector(0)",
+            "expr": "(100 * sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"2..\"}[$__range])) / sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[$__range]))) or vector(0)",
+            "legendFormat": "2xx",
             "refId": "A"
+          },
+          {
+            "expr": "(100 * sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"3..\"}[$__range])) / sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[$__range]))) or vector(0)",
+            "legendFormat": "3xx",
+            "refId": "B"
+          },
+          {
+            "expr": "(100 * sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"4..\"}[$__range])) / sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[$__range]))) or vector(0)",
+            "legendFormat": "4xx",
+            "refId": "C"
+          },
+          {
+            "expr": "(100 * sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\", status=~\"5..\"}[$__range])) / sum(increase(sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"}[$__range]))) or vector(0)",
+            "legendFormat": "5xx",
+            "refId": "D"
           }
         ],
         "fieldConfig": {
           "defaults": {
             "unit": "percent",
-            "decimals": 2,
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 1, "color": "yellow"},
-                {"value": 5, "color": "orange"},
-                {"value": 10, "color": "red"}
+            "decimals": 1,
+            "noValue": "0",
+            "links": [
+              {
+                "title": "View ${__field.displayName} logs",
+                "url": "/d/sqcdy-log-viewer?var-server=${server}&var-domain=${domain}&var-status=${__field.displayName}"
+              }
+            ]
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "2xx"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}},
+                {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"value": 0, "color": "green"}]}}
               ]
             },
-            "noValue": "0"
-          }
+            {
+              "matcher": {"id": "byName", "options": "3xx"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}},
+                {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"value": 0, "color": "blue"}]}}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "4xx"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}},
+                {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"value": 0, "color": "orange"}]}}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "5xx"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}},
+                {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"value": 0, "color": "red"}]}}
+              ]
+            }
+          ]
         },
         "options": {
-          "colorMode": "background",
-          "graphMode": "area",
-          "textMode": "auto"
+          "colorMode": "value",
+          "graphMode": "none",
+          "textMode": "value_and_name",
+          "orientation": "vertical",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "text": {
+            "titleSize": 16,
+            "valueSize": 28
+          }
         }
       },
       {
@@ -205,11 +258,19 @@
               "matcher": {"id": "byName", "options": "URL"},
               "properties": [
                 {
+                  "id": "custom.width",
+                  "value": 350
+                },
+                {
                   "id": "links",
                   "value": [
                     {
+                      "title": "View Logs",
+                      "url": "/d/sqcdy-log-viewer?var-server=${server}&var-domain=${__data.fields.Domain}&var-search=${__data.fields.URL:percentencode}&${__url_time_range}"
+                    },
+                    {
                       "title": "Open URL",
-                      "url": "https://${__data.fields.domain}${__data.fields.url}",
+                      "url": "https://${__data.fields.Domain}${__data.fields.URL}",
                       "targetBlank": true
                     }
                   ]
@@ -245,7 +306,7 @@
               "renameByName": {
                 "domain": "Domain",
                 "url": "URL",
-                "Value (lastNotNull)": "Errors"
+                "Value (lastNotNull)": "Requests"
               }
             }
           },
@@ -254,11 +315,37 @@
             "options": {
               "sort": [
                 {
-                  "field": "Errors",
+                  "field": "Requests",
                   "desc": true
                 }
               ]
             }
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "footer": {
+            "show": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "URL"},
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 400
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View logs",
+                    "url": "/d/sqcdy-log-viewer?var-server=${__data.fields.Domain}&var-domain=${__data.fields.Domain}&var-search=${__data.fields.URL:percentencode}"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -273,6 +360,27 @@
             "refId": "A"
           }
         ],
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 0
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "IP Address"},
+              "properties": [
+                {
+                  "id": "links",
+                  "value": [
+                    {
+                      "title": "View Logs",
+                      "url": "/d/sqcdy-log-viewer?var-server=${server}&var-domain=${domain}&var-search=${__data.fields['IP Address']:percentencode}&${__url_time_range}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         "transformations": [
           {
             "id": "groupBy",
@@ -310,7 +418,10 @@
               ]
             }
           }
-        ]
+        ],
+        "options": {
+          "showHeader": true
+        }
       },
       {
         "title": "Top User Agents",
@@ -323,6 +434,31 @@
             "refId": "A"
           }
         ],
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 0
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "User Agent"},
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 400
+                },
+                {
+                  "id": "links",
+                  "value": [
+                    {
+                      "title": "View Logs",
+                      "url": "/d/sqcdy-log-viewer?var-server=${server}&var-domain=${domain}&var-search=${__data.fields['User Agent']:percentencode}&${__url_time_range}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         "transformations": [
           {
             "id": "groupBy",
@@ -360,26 +496,9 @@
               ]
             }
           }
-        ]
-      },
-      {
-        "title": "HTTP Status Codes",
-        "type": "piechart",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 40},
-        "targets": [
-          {
-            "expr": "sum by (status) (sqcdy_site_status_code_total{instance=~\"$server\", domain=~\"$domain\"})",
-            "legendFormat": "{{status}}",
-            "refId": "A"
-          }
         ],
         "options": {
-          "legend": {
-            "displayMode": "table",
-            "placement": "right",
-            "showLegend": true,
-            "calcs": ["lastNotNull"]
-          }
+          "showHeader": true
         }
       }
     ]
