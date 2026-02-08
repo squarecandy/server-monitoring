@@ -191,7 +191,7 @@
         "gridPos": {"h": 10, "w": 12, "x": 12, "y": 20},
         "targets": [
           {
-            "expr": "topk(10, sum by (domain, url) (increase(sqcdy_site_top_url_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range])) > 0)",
+            "expr": "topk(10, ceil(sum by (domain, url) (increase(sqcdy_site_top_url_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range]))) > 0)",
             "format": "table",
             "refId": "A"
           }
@@ -268,7 +268,7 @@
         "gridPos": {"h": 10, "w": 12, "x": 0, "y": 30},
         "targets": [
           {
-            "expr": "topk(20, sum by (ip) (increase(sqcdy_site_top_ip_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range])) > 0)",
+            "expr": "topk(20, ceil(sum by (ip) (increase(sqcdy_site_top_ip_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range]))) > 0)",
             "format": "table",
             "refId": "A"
           }
@@ -318,7 +318,7 @@
         "gridPos": {"h": 10, "w": 12, "x": 12, "y": 30},
         "targets": [
           {
-            "expr": "topk(20, sum by (user_agent) (increase(sqcdy_site_top_user_agent_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range])) > 0)",
+            "expr": "topk(20, ceil(sum by (user_agent) (increase(sqcdy_site_top_user_agent_requests{instance=~\"$server\", domain=~\"$domain\"}[$__range]))) > 0)",
             "format": "table",
             "refId": "A"
           }
