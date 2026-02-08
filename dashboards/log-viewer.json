@@ -149,23 +149,78 @@
         "overrides": [
           {
             "matcher": {"id": "byName", "options": "2xx"},
-            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]
+            "properties": [
+              {"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}},
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View 2xx logs",
+                    "url": "/d/sqcdy-log-viewer?var-server=${server}&var-domain=${domain}&var-status=2xx&var-search=${search}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
           },
           {
             "matcher": {"id": "byName", "options": "3xx"},
-            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}]
+            "properties": [
+              {"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}},
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View 3xx logs",
+                    "url": "/d/sqcdy-log-viewer?var-server=${server}&var-domain=${domain}&var-status=3xx&var-search=${search}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
           },
           {
             "matcher": {"id": "byName", "options": "4xx"},
-            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}]
+            "properties": [
+              {"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}},
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View 4xx logs",
+                    "url": "/d/sqcdy-log-viewer?var-server=${server}&var-domain=${domain}&var-status=4xx&var-search=${search}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
           },
           {
             "matcher": {"id": "byName", "options": "5xx"},
-            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+            "properties": [
+              {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}},
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View 5xx logs",
+                    "url": "/d/sqcdy-log-viewer?var-server=${server}&var-domain=${domain}&var-status=5xx&var-search=${search}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
           },
           {
             "matcher": {"id": "byName", "options": "Error"},
-            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+            "properties": [
+              {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}},
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View error logs",
+                    "url": "/d/sqcdy-log-viewer?var-server=${server}&var-domain=${domain}&var-status=error&var-search=${search}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
           },
           {
             "matcher": {"id": "byName", "options": "Total"},
