@@ -18,6 +18,7 @@ import json
 import argparse
 from typing import Dict, List, Tuple, Optional
 import time
+import threading
 
 # Log parsing regex patterns
 NGINX_LOG_PATTERN = re.compile(
@@ -319,11 +320,32 @@ class MetricsHandler(BaseHTTPRequestHandler):
     """HTTP handler for Prometheus metrics endpoint"""
     
     analyzer = None
+    cached_metrics = ""
+    last_update = 0
+    update_interval = 60  # Update cache every 60 seconds
+    lock = threading.Lock()
+    
+    @classmethod
+    def update_metrics_cache(cls):
+        """Background thread to update metrics cache"""
+        while True:
+            try:
+                with cls.lock:
+                    cls.cached_metrics = cls.analyzer.collect_metrics()
+                    cls.last_update = time.time()
+                    print(f"Metrics cache updated at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", file=sys.stderr, flush=True)
+            except Exception as e:
+                print(f"Error updating metrics cache: {e}", file=sys.stderr, flush=True)
+            
+            # Sleep until next update
+            time.sleep(cls.update_interval)
     
     def do_GET(self):
         if self.path == '/metrics':
             try:
-                metrics = self.analyzer.collect_metrics()
+                # Return cached metrics
+                with self.lock:
+                    metrics = self.cached_metrics
                 
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/plain; version=0.0.4')
@@ -377,10 +399,23 @@ def main():
     
     # Start HTTP server
     MetricsHandler.analyzer = analyzer
+    
+    # Initialize cache with first metrics collection
+    print("Collecting initial metrics...", file=sys.stderr, flush=True)
+    MetricsHandler.cached_metrics = analyzer.collect_metrics()
+    MetricsHandler.last_update = time.time()
+    print("Initial metrics collected", file=sys.stderr, flush=True)
+    
+    # Start background thread to update metrics cache
+    cache_thread = threading.Thread(target=MetricsHandler.update_metrics_cache, daemon=True)
+    cache_thread.start()
+    print("Background metrics updater started", file=sys.stderr, flush=True)
+    
     server = HTTPServer(('', args.port), MetricsHandler)
     
     print(f"Starting log analyzer on port {args.port}", file=sys.stderr)
     print(f"Analyzing logs with {args.window} minute window", file=sys.stderr)
+    print(f"Metrics cache updates every {MetricsHandler.update_interval} seconds", file=sys.stderr)
     print(f"Metrics available at http://localhost:{args.port}/metrics", file=sys.stderr)
     
     try:
