@@ -37,10 +37,11 @@ UBUNTU_CLOUDFLARE_LOG_PATTERN = re.compile(
 # Format 1: [TIME] IP RT - VHOST "METHOD URL PROTOCOL" STATUS SIZE RT "REFERRER" "USER_AGENT"
 # Format 2: [TIME] IP - CACHE_STATUS VHOST "METHOD URL PROTOCOL" STATUS SIZE RT "REFERRER" "UA"
 # Format 3: [TIME] IP RT CACHE_STATUS VHOST "METHOD URL PROTOCOL" STATUS SIZE RT "REFERRER" "UA"
-# Format 4: [TIME] IP RT CACHE_STATUS - "METHOD URL PROTOCOL" STATUS SIZE RT "REFERRER" "UA" (HTTP/3)
+# Format 4: [TIME] IP - CACHE_STATUS - "METHOD URL PROTOCOL" STATUS SIZE RT "REFERRER" "UA" (HTTP/3)
+# Simplified pattern: match anything between IP and opening quote (handles all variations)
 GRIDPANE_LOG_PATTERN = re.compile(
     r'\[(?P<time>[^\]]+)\] (?P<ip>[\da-f:.]+) '
-    r'(?:[\d.]+ )?(?:\S+ )?(?:\S+ )?'
+    r'(?:[^"]+)?'  # Match everything between IP and opening quote (response time, cache status, vhost, etc.)
     r'"(?P<method>\S+) (?P<url>\S+) \S+" (?P<status>\d+) (?P<size>\d+) '
     r'[\d.]+ "(?P<referrer>[^"]*)" "(?P<user_agent>[^"]*)"'
 )
