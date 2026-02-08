@@ -127,11 +127,9 @@ docs/               - Documentation
 
 ## Roadmap
 
-- add support for deploying on custom Ubuntu servers
 - add backup status tracking for both db and files (after we revise our backup systems)
 - **Separate PHP error logs at server level**: Parse PHP fatal errors separately from nginx info messages for better filtering
 - **Error log level filtering**: Filter error logs by severity (warn/error only) once PHP errors are separated to reduce noise and costs
-- **Log sampling**: Implement sampling for high-traffic sites (keep 10-25% of logs) to reduce Loki costs while maintaining visibility
 - Group most common error messages, sort by volume (how to find similar but not 100% identical messages?)
 - **Additional log sources**: PHP-FPM logs, database slow queries
 
