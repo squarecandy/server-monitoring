@@ -309,7 +309,6 @@ metrics:
 integrations:
   node_exporter:
     enabled: true
-    instance: '$(hostname)'
 
 EOF
 
