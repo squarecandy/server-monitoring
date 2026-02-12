@@ -285,13 +285,6 @@ metrics:
   configs:
     - name: squarecandy
       scrape_configs:
-        # Node exporter (system metrics)
-        - job_name: 'node'
-          static_configs:
-            - targets: ['localhost:9100']
-              labels:
-                instance: '$(hostname)'
-        
         # Site metrics exporter
         - job_name: 'sqcdy-sites'
           static_configs:
@@ -316,6 +309,7 @@ metrics:
 integrations:
   node_exporter:
     enabled: true
+    instance: '$(hostname)'
 
 EOF
 
