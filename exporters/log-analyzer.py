@@ -196,8 +196,11 @@ class LogAnalyzer:
             'status_codes': Counter()
         }
         
+        max_lines_per_file = 50000  # Limit lines read per file to prevent excessive processing
+        
         for log_file in log_files:
             try:
+                lines_read = 0
                 # Handle gzipped files
                 if log_file.endswith('.gz'):
                     f = gzip.open(log_file, 'rt', errors='ignore')
@@ -206,6 +209,10 @@ class LogAnalyzer:
                 
                 with f:
                     for line in f:
+                        if lines_read >= max_lines_per_file:
+                            break
+                        lines_read += 1
+                        
                         entry = self.parse_log_line(line)
                         if not entry:
                             continue
@@ -330,12 +337,21 @@ class MetricsHandler(BaseHTTPRequestHandler):
         """Background thread to update metrics cache"""
         while True:
             try:
+                start_time = time.time()
+                print(f"Starting metrics collection at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", file=sys.stderr, flush=True)
+                
+                metrics = cls.analyzer.collect_metrics()
+                
+                elapsed = time.time() - start_time
+                print(f"Metrics collection completed in {elapsed:.2f}s", file=sys.stderr, flush=True)
+                
                 with cls.lock:
-                    cls.cached_metrics = cls.analyzer.collect_metrics()
+                    cls.cached_metrics = metrics
                     cls.last_update = time.time()
-                    print(f"Metrics cache updated at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", file=sys.stderr, flush=True)
+                    
             except Exception as e:
                 print(f"Error updating metrics cache: {e}", file=sys.stderr, flush=True)
+                # Keep old metrics on error
             
             # Sleep until next update
             time.sleep(cls.update_interval)
@@ -400,11 +416,10 @@ def main():
     # Start HTTP server
     MetricsHandler.analyzer = analyzer
     
-    # Initialize cache with first metrics collection
-    print("Collecting initial metrics...", file=sys.stderr, flush=True)
-    MetricsHandler.cached_metrics = analyzer.collect_metrics()
-    MetricsHandler.last_update = time.time()
-    print("Initial metrics collected", file=sys.stderr, flush=True)
+    # Start with empty metrics - will be populated by background thread
+    MetricsHandler.cached_metrics = "# Metrics collection in progress...\n"
+    MetricsHandler.last_update = 0
+    print("Starting HTTP server (metrics will be available shortly)...", file=sys.stderr, flush=True)
     
     # Start background thread to update metrics cache
     cache_thread = threading.Thread(target=MetricsHandler.update_metrics_cache, daemon=True)
