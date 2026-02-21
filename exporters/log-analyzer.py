@@ -329,7 +329,7 @@ class MetricsHandler(BaseHTTPRequestHandler):
     analyzer = None
     cached_metrics = ""
     last_update = 0
-    update_interval = 60  # Update cache every 60 seconds
+    update_interval = 55  # Update cache every 55 seconds (offset from 60s scrape interval)
     lock = threading.Lock()
     
     @classmethod
