@@ -114,6 +114,16 @@ groups:
   - name: squarecandy_site_alerts
     interval: 1m
     rules:
+      # Metric Collection Issues
+      - alert: LogAnalyzerMetricsMissing
+        expr: absent(sqcdy_site_requests_total) or (time() - timestamp(sqcdy_site_requests_total)) > 180
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Log analyzer metrics missing on {{ $labels.instance }}"
+          description: "No log analyzer metrics received from {{ $labels.instance }} for more than 3 minutes. Check sqcdy-log-analyzer service and Grafana Agent scraping."
+      
       # Site Disk Usage
       - alert: SiteDiskUsageHigh
         expr: (sqcdy_site_disk_bytes / 1024 / 1024 / 1024) > 10
