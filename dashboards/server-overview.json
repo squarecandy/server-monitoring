@@ -37,7 +37,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
         "targets": [
           {
-            "expr": "avg by (instance) (label_replace(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\",instance=~\"${server:regex /(.+?):.*/\1}.*\"}[$__rate_interval])) * 100), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
+            "expr": "avg by (instance) (label_replace(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\",instance=~\"${server:regex /(.+?):.*/\\1}.*\"}[$__rate_interval])) * 100), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -64,17 +64,17 @@
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
         "targets": [
           {
-            "expr": "avg by (instance) (label_replace(node_load1{instance=~\"${server:regex /(.+?):.*/\1}.*\"}, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
+            "expr": "avg by (instance) (label_replace(node_load1{instance=~\"${server:regex /(.+?):.*/\\1}.*\"}, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
             "legendFormat": "{{instance}} - 1m",
             "refId": "A"
           },
           {
-            "expr": "avg by (instance) (label_replace(node_load5{instance=~\"${server:regex /(.+?):.*/\1}.*\"}, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
+            "expr": "avg by (instance) (label_replace(node_load5{instance=~\"${server:regex /(.+?):.*/\\1}.*\"}, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
             "legendFormat": "{{instance}} - 5m",
             "refId": "B"
           },
           {
-            "expr": "avg by (instance) (label_replace(node_load15{instance=~\"${server:regex /(.+?):.*/\1}.*\"}, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
+            "expr": "avg by (instance) (label_replace(node_load15{instance=~\"${server:regex /(.+?):.*/\\1}.*\"}, \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
             "legendFormat": "{{instance}} - 15m",
             "refId": "C"
           }
@@ -116,7 +116,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
         "targets": [
           {
-            "expr": "avg by (instance) (label_replace(100 * (1 - (node_memory_MemAvailable_bytes{instance=~\"${server:regex /(.+?):.*/\1}.*\"} / node_memory_MemTotal_bytes{instance=~\"${server:regex /(.+?):.*/\1}.*\"})), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
+            "expr": "avg by (instance) (label_replace(100 * (1 - (node_memory_MemAvailable_bytes{instance=~\"${server:regex /(.+?):.*/\\1}.*\"} / node_memory_MemTotal_bytes{instance=~\"${server:regex /(.+?):.*/\\1}.*\"})), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -143,7 +143,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
         "targets": [
           {
-            "expr": "avg by (instance) (label_replace(100 * (1 - (node_memory_SwapFree_bytes{instance=~\"${server:regex /(.+?):.*/\1}.*\"} / node_memory_SwapTotal_bytes{instance=~\"${server:regex /(.+?):.*/\1}.*\"})), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
+            "expr": "avg by (instance) (label_replace(100 * (1 - (node_memory_SwapFree_bytes{instance=~\"${server:regex /(.+?):.*/\\1}.*\"} / node_memory_SwapTotal_bytes{instance=~\"${server:regex /(.+?):.*/\\1}.*\"})), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -170,7 +170,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
         "targets": [
           {
-            "expr": "avg by (instance) (label_replace(100 - (100 * node_filesystem_avail_bytes{mountpoint=\"/\",instance=~\"${server:regex /(.+?):.*/\1}.*\"} / node_filesystem_size_bytes{mountpoint=\"/\",instance=~\"${server:regex /(.+?):.*/\1}.*\"}), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
+            "expr": "avg by (instance) (label_replace(100 - (100 * node_filesystem_avail_bytes{mountpoint=\"/\",instance=~\"${server:regex /(.+?):.*/\\1}.*\"} / node_filesystem_size_bytes{mountpoint=\"/\",instance=~\"${server:regex /(.+?):.*/\\1}.*\"}), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -197,7 +197,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
         "targets": [
           {
-            "expr": "sum by (instance) (label_replace(rate(sqcdy_site_requests_total{instance=~\"${server:regex /(.+?):.*/\1}.*\"}[$__rate_interval]), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")) * 60",
+            "expr": "sum by (instance) (label_replace(rate(sqcdy_site_requests_total{instance=~\"${server:regex /(.+?):.*/\\1}.*\"}[$__rate_interval]), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")) * 60",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -214,7 +214,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
         "targets": [
           {
-            "expr": "sum by (instance) (label_replace(rate(sqcdy_site_traffic_bytes{instance=~\"${server:regex /(.+?):.*/\1}.*\"}[$__rate_interval]), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")) * 60 / 1024 / 1024",
+            "expr": "sum by (instance) (label_replace(rate(sqcdy_site_traffic_bytes{instance=~\"${server:regex /(.+?):.*/\\1}.*\"}[$__rate_interval]), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\")) * 60 / 1024 / 1024",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
