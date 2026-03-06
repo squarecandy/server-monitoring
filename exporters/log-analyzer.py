@@ -196,8 +196,10 @@ class LogAnalyzer:
             'status_codes': Counter()
         }
         
-        max_lines_per_file = 50000  # Limit lines read per file to prevent excessive processing
-        
+        max_lines_per_file = 50000  # Safety cap on lines read per file
+        # Read last 5MB of large files so we reach recent log entries efficiently
+        TAIL_BYTES = 5 * 1024 * 1024
+
         for log_file in log_files:
             try:
                 lines_read = 0
@@ -205,8 +207,16 @@ class LogAnalyzer:
                 if log_file.endswith('.gz'):
                     f = gzip.open(log_file, 'rt', errors='ignore')
                 else:
-                    f = open(log_file, 'r', errors='ignore')
-                
+                    raw = open(log_file, 'r', errors='ignore')
+                    try:
+                        file_size = os.path.getsize(log_file)
+                        if file_size > TAIL_BYTES:
+                            raw.seek(file_size - TAIL_BYTES)
+                            raw.readline()  # Discard partial first line after seek
+                    except OSError:
+                        pass
+                    f = raw
+
                 with f:
                     for line in f:
                         if lines_read >= max_lines_per_file:
@@ -262,6 +272,9 @@ class LogAnalyzer:
     
     def collect_metrics(self) -> str:
         """Collect all metrics in Prometheus format"""
+        # Recalculate cutoff time on every collection run (not just at startup)
+        self.cutoff_time = datetime.now() - timedelta(minutes=self.window_minutes)
+
         output = []
         # Get hostname for instance label
         instance = os.uname()[1] if hasattr(os, 'uname') else os.getenv('HOSTNAME', 'unknown')
