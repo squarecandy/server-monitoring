@@ -12,7 +12,7 @@ import gzip
 from collections import defaultdict, Counter
 from datetime import datetime, timedelta
 from pathlib import Path
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
 import subprocess
 import json
 import argparse
@@ -439,7 +439,7 @@ def main():
     cache_thread.start()
     print("Background metrics updater started", file=sys.stderr, flush=True)
     
-    server = HTTPServer(('', args.port), MetricsHandler)
+    server = ThreadingHTTPServer(('', args.port), MetricsHandler)
     
     print(f"Starting log analyzer on port {args.port}", file=sys.stderr)
     print(f"Analyzing logs with {args.window} minute window", file=sys.stderr)
