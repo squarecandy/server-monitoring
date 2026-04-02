@@ -309,6 +309,8 @@ metrics:
 integrations:
   node_exporter:
     enabled: true
+    enable_collectors:
+      - vmstat
 
 EOF
 

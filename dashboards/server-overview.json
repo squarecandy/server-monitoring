@@ -224,6 +224,51 @@
             "unit": "MBs"
           }
         }
+      },
+      {
+        "title": "Swap I/O Activity",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+        "description": "Pages swapped in/out per second. High values indicate active swapping (performance problem). Near-zero values mean swap usage is cold data (not a problem). If a server shows 'No data': the kernel/container does not expose pswpin\/pswpout in \/proc\/vmstat. This is common on Plesk\/CentOS VPS containers where swap is managed at the host level. Diagnose on the server: grep pswp \/proc\/vmstat — if empty, these metrics are unavailable regardless of node_exporter version.",
+        "targets": [
+          {
+            "expr": "avg by (instance) (label_replace(rate(node_vmstat_pswpin{instance=~\"$server.*\"}[$__rate_interval]), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
+            "legendFormat": "{{instance}} - Swap In",
+            "refId": "A"
+          },
+          {
+            "expr": "avg by (instance) (label_replace(rate(node_vmstat_pswpout{instance=~\"$server.*\"}[$__rate_interval]), \"instance\", \"$1\", \"instance\", \"([^:]+)(:[0-9]+)?\"))",
+            "legendFormat": "{{instance}} - Swap Out",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "pages/sec",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 10, "color": "yellow"},
+                {"value": 100, "color": "red"}
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byRegexp", "options": ".*Swap In.*"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byRegexp", "options": ".*Swap Out.*"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}
+              ]
+            }
+          ]
+        }
       }
     ]
 }
