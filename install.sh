@@ -306,6 +306,13 @@ metrics:
               labels:
                 instance: '$(hostname)'
 
+        # Swap I/O metrics (root-owned exporter; grafana-agent cannot read /proc/vmstat directly in Plesk VPS containers)
+        - job_name: 'sqcdy-swap'
+          static_configs:
+            - targets: ['localhost:9104']
+              labels:
+                instance: '$(hostname)'
+
 integrations:
   node_exporter:
     enabled: true
@@ -500,6 +507,23 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
+# Swap I/O metrics service (must run as root to read /proc/vmstat in Plesk VPS containers)
+cat > /etc/systemd/system/sqcdy-swap-metrics.service <<EOF
+[Unit]
+Description=Square Candy Swap I/O Metrics Exporter
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=$INSTALL_DIR/exporters/swap-metrics.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # Log analyzer service
 cat > /etc/systemd/system/sqcdy-log-analyzer.service <<EOF
 [Unit]
@@ -525,19 +549,21 @@ echo "Starting services..."
 systemctl enable grafana-agent
 systemctl enable sqcdy-site-metrics
 systemctl enable sqcdy-user-metrics
+systemctl enable sqcdy-swap-metrics
 systemctl enable sqcdy-log-analyzer
 
 # Restart to pick up any config changes
 systemctl restart grafana-agent
 systemctl restart sqcdy-site-metrics
 systemctl restart sqcdy-user-metrics
+systemctl restart sqcdy-swap-metrics
 systemctl restart sqcdy-log-analyzer
 
 sleep 3
 
 # Check service status
 ALL_OK=true
-for service in grafana-agent sqcdy-site-metrics sqcdy-user-metrics sqcdy-log-analyzer; do
+for service in grafana-agent sqcdy-site-metrics sqcdy-user-metrics sqcdy-swap-metrics sqcdy-log-analyzer; do
     if systemctl is-active --quiet $service; then
         echo -e "${GREEN}✓ $service is running${NC}"
     else
@@ -562,10 +588,12 @@ if [ "$ALL_OK" = true ]; then
     echo "   - http://$(hostname):9101/metrics (site metrics)"
     echo "   - http://$(hostname):9102/metrics (user metrics)"
     echo "   - http://$(hostname):9103/metrics (log analyzer)"
+    echo "   - http://$(hostname):9104/metrics (swap metrics)"
     echo ""
     echo "To view service logs:"
     echo "  sudo journalctl -u sqcdy-site-metrics -f"
     echo "  sudo journalctl -u sqcdy-user-metrics -f"
+    echo "  sudo journalctl -u sqcdy-swap-metrics -f"
     echo "  sudo journalctl -u sqcdy-log-analyzer -f"
     echo "  sudo journalctl -u grafana-agent -f"
 else

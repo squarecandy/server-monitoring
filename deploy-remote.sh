@@ -97,7 +97,7 @@ echo ""
 
 # Restart services to pick up changes
 echo "Restarting services..."
-for service in sqcdy-site-metrics sqcdy-user-metrics sqcdy-log-analyzer; do
+for service in sqcdy-site-metrics sqcdy-user-metrics sqcdy-swap-metrics sqcdy-log-analyzer; do
     ssh "${REMOTE_USER}@${REMOTE_HOST}" "$SUDO systemctl restart $service" 2>/dev/null && echo "  ✓ $service restarted" || true
 done
 
@@ -126,7 +126,7 @@ echo ""
 echo "Verifying services..."
 echo "========================================"
 
-SERVICES="sqcdy-site-metrics sqcdy-user-metrics sqcdy-log-analyzer grafana-agent"
+SERVICES="sqcdy-site-metrics sqcdy-user-metrics sqcdy-swap-metrics sqcdy-log-analyzer grafana-agent"
 ALL_OK=true
 
 for service in $SERVICES; do
