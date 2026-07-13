@@ -14,7 +14,7 @@ import time
 import threading
 from pathlib import Path
 from typing import Dict, List, Optional
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, ThreadingHTTPServer, BaseHTTPRequestHandler
 import argparse
 
 # Cache for site list (refresh every 5 minutes)
@@ -474,12 +474,13 @@ class MetricsHandler(BaseHTTPRequestHandler):
                 
                 # Return cached metrics if available
                 with METRICS_CACHE_LOCK:
-                    if METRICS_CACHE:
-                        response = METRICS_CACHE
-                    else:
-                        # First request - collect synchronously
-                        metrics = collect_metrics(self.adapter)
-                        response = metrics.render()
+                    response = METRICS_CACHE
+
+                if response is None:
+                    # First request before background thread has run - collect once
+                    metrics = collect_metrics(self.adapter)
+                    response = metrics.render()
+                    with METRICS_CACHE_LOCK:
                         METRICS_CACHE = response
                 
                 self.send_response(200)
@@ -527,7 +528,7 @@ def main():
     
     # Start HTTP server
     MetricsHandler.adapter = adapter
-    server = HTTPServer(('', args.port), MetricsHandler)
+    server = ThreadingHTTPServer(('', args.port), MetricsHandler)
     
     print(f"Starting metrics server on port {args.port}", file=sys.stderr)
     print(f"Metrics available at http://localhost:{args.port}/metrics", file=sys.stderr)
