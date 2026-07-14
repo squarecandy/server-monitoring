@@ -58,11 +58,12 @@ serve_metrics() {
         {
             echo -e "HTTP/1.1 200 OK\r"
             echo -e "Content-Type: text/plain; version=0.0.4\r"
+            echo -e "Connection: close\r"
             echo -e "\r"
             get_user_metrics
         } | nc -l -p "$PORT" -q 1 2>/dev/null || {
             # Fallback for systems without nc -q
-            echo -e "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n$(get_user_metrics)" | nc -l "$PORT" 2>/dev/null
+            echo -e "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\n$(get_user_metrics)" | nc -l "$PORT" 2>/dev/null
         }
     done
 }
