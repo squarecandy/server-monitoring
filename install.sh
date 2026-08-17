@@ -240,18 +240,8 @@ fi
 # Install Grafana Agent
 echo "Installing Grafana Agent..."
 if ! command -v grafana-agent &> /dev/null; then
-    if [ "$SQCDY_PLATFORM" = "gridpane" ]; then
-        # GridPane: install via direct .deb download to avoid touching apt repos/update
-        ARCH=$(dpkg --print-architecture 2>/dev/null || echo "amd64")
-        GA_VERSION="0.40.4"
-        GA_DEB="grafana-agent_${GA_VERSION}_${ARCH}.deb"
-        echo "Downloading grafana-agent v${GA_VERSION} (${ARCH})..."
-        wget -q -O "/tmp/${GA_DEB}" "https://github.com/grafana/agent/releases/download/v${GA_VERSION}/${GA_DEB}"
-        dpkg -i "/tmp/${GA_DEB}" > /dev/null 2>&1
-        rm -f "/tmp/${GA_DEB}"
-        echo -e "${GREEN}✓ Grafana Agent installed (direct download)${NC}"
-    # Install for Debian/Ubuntu via apt
-    elif command -v apt-get &> /dev/null; then
+    if command -v apt-get &> /dev/null; then
+        # Install for Debian/Ubuntu (including GridPane) via Grafana apt repo
         mkdir -p /etc/apt/keyrings/
         wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor > /etc/apt/keyrings/grafana.gpg
         echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | tee /etc/apt/sources.list.d/grafana.list
